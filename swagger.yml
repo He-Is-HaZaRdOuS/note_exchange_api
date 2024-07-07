@@ -23,9 +23,16 @@ components:
       name: "lname"
       description: "Last name of the person to get"
       in: path
-      required: True
+      required: true
       schema:
         type: "string"
+    note_id:
+      name: "note_id"
+      description: "ID of the note"
+      in: path
+      required: true
+      schema:
+        type: "integer"
 
 paths:
   /people:
@@ -93,3 +100,65 @@ paths:
       responses:
         "204":
           description: "Successfully deleted person"
+  /notes:
+    post:
+      operationId: "notes.create"
+      tags:
+        - Notes
+      summary: "Create a note associated with a person"
+      requestBody:
+          description: "Note to create"
+          required: True
+          content:
+            application/json:
+              schema:
+                x-body-name: "note"
+                type: "object"
+                properties:
+                  person_id:
+                    type: "integer"
+                  content:
+                    type: "string"
+      responses:
+        "201":
+          description: "Successfully created a note"
+  /notes/{note_id}:
+    get:
+      operationId: "notes.read_one"
+      tags: 
+        - Notes
+      summary: "Read one note"
+      parameters:
+        - $ref: "#/components/parameters/note_id"
+      responses:
+        "200":
+          description: "Successfully read one note"
+    put:
+      tags: 
+        - Notes
+      operationId: "notes.update"
+      summary: "Update a note"
+      parameters:
+        - $ref: "#/components/parameters/note_id"
+      responses: 
+        "200":
+          description: "Successfully updated note"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: "note"
+              type: "object"
+              properties:
+                content:
+                  type: "string"
+    delete:
+      tags: 
+        - Notes
+      operationId: "notes.delete"
+      summary: "Delete a note"
+      parameters:
+        - $ref: "#/components/parameters/note_id"
+      responses:
+        "204":
+          description: "Successfully deleted note"
