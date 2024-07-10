@@ -1,7 +1,10 @@
-from flask import abort, make_response
-
+from flask import Blueprint, abort, make_response
 from config import db
-from models import Note, Person, note_schema
+from models import Note, User
+from schemas import note_schema
+
+notes_bp = Blueprint('notes', __name__)
+
 
 def read_one(note_id):
     note = Note.query.get(note_id)
@@ -34,13 +37,13 @@ def delete(note_id):
         abort(404, f"Note with id {note_id} not found!")
 
 def create(note):
-    person_id = note.get("person_id")
-    person = Person.query.get(person_id)
+    user_id = note.get("user_id")
+    user = user.query.get(user_id)
 
-    if person:
+    if user:
         new_note = note_schema.load(note, session=db.session)
-        person.notes.append(new_note)
+        user.notes.append(new_note)
         db.session.commit()
         return note_schema.dump(new_note), 201
     else:
-        abort(404, f"Person not found for ID: {person_id}")
+        abort(404, f"user not found for ID: {user_id}")
