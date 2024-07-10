@@ -2,7 +2,8 @@ from flask import Blueprint, abort, make_response, jsonify, request
 from config import db, jwt
 from models import User
 from schemas import user_schema, users_schema
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 users_bp = Blueprint('users', __name__)
 
@@ -19,23 +20,25 @@ def expired_token_callback(header, payload):
 
 @users_bp.route("/", methods=["GET"])
 def read_all():
-    print(request.headers)
     users = User.query.all()
     return users_schema.dump(users)
 
 
-def read_one(username):
-    user = User.query.filter(User.username == username).one_or_none()
+@users_bp.route("/<user_id>", methods=["GET"])
+def read_one(user_id):
+    user = User.query.filter(User.username == user_id).one_or_none()
 
     if user is not None:
         return user_schema.dump(user)
     else:
-        abort(404, f"user with last name {username} not found")
+        abort(404, f"user with username {user_id} not found")
 
+@users_bp.route("/", methods=["PUT"])
 @jwt_required()
-def update(username, user):
+def update():
+    user = request.get_json()
+    username = user.get("username")
     print(request.headers)
-    print("er")
     current_user = get_jwt_identity()
     existing_user = User.query.filter(User.username == username).one_or_none()
     
@@ -43,7 +46,7 @@ def update(username, user):
         if username != current_user['username']:
             abort(404, f"not authorized to change this user")
         update_user = user_schema.load(user, session=db.session)
-        existing_user.password = update_user.password
+        existing_user.password = generate_password_hash(update_user.password)
         db.session.merge(existing_user)
         db.session.commit()
         return user_schema.dump(existing_user), 201
@@ -51,12 +54,22 @@ def update(username, user):
         abort(404, f"user with last name {username} not found")
 
 
-def delete(username):
-    existing_user = User.query.filter(User.username == username).one_or_none()
+@users_bp.route("/<user_id>", methods=["DELETE"])
+@jwt_required()
+def delete(user_id):
+    existing_user = User.query.filter(User.id == user_id).one_or_none()
+    current_user = get_jwt_identity()
+    delete_user = User.query.filter(User.username == current_user['username']).one_or_none()
+
+    if not delete_user:
+        return abort(404, f"JWT expired or outdated or user does not exist anymore")
+
+    if existing_user.id != delete_user.id:
+        return abort(404, f"not authorized")
 
     if existing_user:
         db.session.delete(existing_user)
         db.session.commit()
-        return make_response(f"{username} successfully deleted", 200)
+        return make_response(f"{existing_user.username} successfully deleted", 200)
     else:
-        abort(404, f"user with last name {username} not found")
+        abort(404, f"user with id {existing_user.username} not found")

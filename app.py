@@ -1,5 +1,6 @@
 from flask import render_template, abort, jsonify, request
 import config
+import datetime
 from config import db
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -45,7 +46,7 @@ def login():
     existing_user = User.query.filter(User.username == username).one_or_none()
 
     if existing_user is not None and check_password_hash(existing_user.password, password):
-        access_token = create_access_token(identity={'username': username})
+        access_token = create_access_token(identity={'username': username}, expires_delta=datetime.timedelta(hours=24))
         return jsonify(access_token=access_token), 200
     return jsonify(message='Invalid credentials'), 401
 
