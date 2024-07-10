@@ -5,14 +5,16 @@ from config import db
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
-from schemas import user_schema, note_schema
+from schemas import user_schema
 from users.routes import users_bp
 from notes.routes import notes_bp
+from friends.routes import friends_bp
 
 app = config.app
 
 app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(notes_bp, url_prefix='/api/notes')
+app.register_blueprint(friends_bp, url_prefix='/api/friends')
 
 
 @app.route("/")

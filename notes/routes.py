@@ -11,14 +11,14 @@ notes_bp = Blueprint('notes', __name__)
 @jwt_required()
 def read_one(note_id):
     current_user = get_jwt_identity()
-    user = User.query.filter(User.username == current_user['username']).one_or_none()
+    cuser = User.query.filter(User.username == current_user['username']).one_or_none()
     note = Note.query.get(note_id)
 
-    if not user:
+    if not cuser:
         return abort(404, f"JWT expired or outdated or user does not exist anymore")
 
     if note is not None:
-        if note.user_id != user.id:
+        if note.user_id != cuser.id:
             return abort(404, f"JWT not authorized to access this note")
         return note_schema.dump(note)
     else:
