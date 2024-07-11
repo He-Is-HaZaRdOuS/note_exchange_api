@@ -3,8 +3,9 @@ from config import db, jwt
 from models import User
 from schemas import user_schema, user_schema_no_password, users_schema_no_password
 from werkzeug.security import generate_password_hash
+from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from common_responses import invalidJWT, noUser, notAuthorized
+from common_responses import invalidJWT, noUser, notAuthorized, noJSON
 
 users_bp = Blueprint('users', __name__)
 
@@ -38,7 +39,10 @@ def read_one(user_id):
 @users_bp.route("/", methods=["PUT"])
 @jwt_required()
 def update():
-    user = request.get_json()
+    try:
+        user = request.get_json()
+    except BadRequest:
+        return noJSON()    
     username = user.get("username")
     print(request.headers)
     current_user = get_jwt_identity()

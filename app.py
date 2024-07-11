@@ -1,10 +1,12 @@
-from flask import abort, jsonify, request, url_for, redirect, render_template
+from flask import abort, jsonify, request, url_for, render_template, make_response
 import config
 import datetime
 from config import db
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import create_access_token
+from common_responses import noJSON
 from schemas import user_schema
 from users.routes import users_bp
 from notes.routes import notes_bp
@@ -37,7 +39,10 @@ def redoc():
 
 @app.route("/api/register", methods=["POST"])
 def register():
-    user = request.get_json()
+    try:
+        user = request.get_json()
+    except BadRequest:
+        return noJSON()
     username = user.get("username")
     password = user.get("password")
     existing_user = User.query.filter(User.username == username).one_or_none()
@@ -47,14 +52,21 @@ def register():
         new_user.password = generate_password_hash(password)
         db.session.add(new_user)
         db.session.commit()
-        return user_schema.dump(new_user), 201
+        return jsonify(user_schema.dump(new_user)), 201
     else:
-        abort(406, f"user with username {username} already exists")
+        response = jsonify({
+            "error": "Username already in use",
+            "message": f"User with username {username} already exists"
+        })
+        return make_response(response, 406)
 
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    user = request.get_json()
+    try:
+        user = request.get_json()
+    except BadRequest:
+        return noJSON()
     username = user.get("username")
     password = user.get("password")
     existing_user = User.query.filter(User.username == username).one_or_none()
@@ -62,7 +74,11 @@ def login():
     if existing_user is not None and check_password_hash(existing_user.password, password):
         access_token = create_access_token(identity={'username': username}, expires_delta=datetime.timedelta(hours=24))
         return jsonify(access_token=access_token), 200
-    return jsonify(message='Invalid credentials'), 401
+    response = jsonify({
+        "error": "Unauthorized",
+        "message": "Invalid credentials"
+    })
+    return make_response(response, 401)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

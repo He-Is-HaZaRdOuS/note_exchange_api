@@ -3,7 +3,8 @@ from config import db
 from models import Note, User, Friend
 from schemas import note_schema, notes_schema
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from common_responses import invalidJWT, noUser, noNote, notAuthorized
+from werkzeug.exceptions import BadRequest
+from common_responses import invalidJWT, noUser, noNote, notAuthorized, noJSON
 
 notes_bp = Blueprint('notes', __name__)
 
@@ -60,7 +61,10 @@ def read_all():
 @notes_bp.route("/<note_id>", methods=["PUT"])
 @jwt_required()
 def update(note_id):
-    note = request.get_json()
+    try:
+        note = request.get_json()
+    except BadRequest:
+        return noJSON()
     existing_note = Note.query.get(note_id)
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
@@ -105,7 +109,10 @@ def delete(note_id):
 @notes_bp.route("/", methods=["POST"])
 @jwt_required()
 def create():
-    note = request.get_json()
+    try:
+        note = request.get_json()
+    except BadRequest:
+        return noJSON()
     user_id = note.get("user_id")
     user = User.query.filter(User.id == user_id).one_or_none()
     current_user = get_jwt_identity()

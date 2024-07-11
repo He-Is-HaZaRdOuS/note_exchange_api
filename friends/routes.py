@@ -4,7 +4,7 @@ from models import User, Friend
 from schemas import friend_schema, users_schema_no_password
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from common_responses import invalidJWT, noUser
+from common_responses import invalidJWT, noUser, noJSON
 
 friends_bp = Blueprint('friends', __name__)
 
@@ -60,7 +60,7 @@ def add_friend(friend_id):
             "error": "Conflict",
             "message": f"Already friends with user id {friend_id}"
         })
-        return make_response(response, 409)
+        return make_response(response, 406)
 
 
 @friends_bp.route("/<friend_id>", methods=["DELETE"])

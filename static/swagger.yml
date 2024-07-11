@@ -245,7 +245,7 @@ paths:
           description: Invalid JWT token error
         '404':
           description: User with friend_id not found error
-        '409':
+        '406':
           description: Already friends with user error
     
     delete:
