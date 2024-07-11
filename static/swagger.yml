@@ -1,0 +1,489 @@
+openapi: 3.0.0
+info:
+  title: Flask API Documentation
+  description: API documentation for the Flask application
+  version: 1.0.0
+
+paths:
+  /:
+    get:
+      summary: Home
+      description: Returns a rendered HTML page with a link to the API documentation.
+      tags:
+        - Home
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/html:
+              schema:
+                type: string
+                example: "<html>...</html>"
+
+  /api/docs:
+    get:
+      summary: API Documentation
+      description: Returns the Redoc HTML page for API documentation.
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/html:
+              schema:
+                type: string
+                example: "<html>...</html>"
+
+  /api/register:
+    post:
+      summary: Register User
+      description: Registers a new user.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  username:
+                    type: string
+                example:
+                  id: 1
+                  username: example_user
+        '406':
+          description: User with username already exists error
+
+  /api/login:
+    post:
+      summary: Login
+      description: Logs in a user and returns an access token.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                example:
+                  access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Invalid credentials error
+
+  /api/users/:
+    get:
+      summary: Get All Users
+      description: Returns a list of all users.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    
+  /api/users/{username}:
+    get:
+      summary: Get User by Username
+      description: Returns a user by username.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User with username not found error
+    
+    delete:
+      summary: Delete User
+      description: Deletes a user by username.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted successfully
+        '401':
+          description: Invalid JWT token error
+        '403':
+          description: Not authorized to delete user error
+        '404':
+          description: User with username not found error
+
+    put:
+      summary: Update User
+      description: Updates a user by username.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '201':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid JWT token error
+        '403':
+          description: Not authorized to update user error
+        '404':
+          description: User with username not found error
+
+  /api/friends/:
+    get:
+      summary: Get Friends
+      description: Returns a list of friends for the authenticated user.
+      tags:
+        - Friends
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /api/friends/{friend_id}:
+    post:
+      summary: Add Friend
+      description: Adds a user as a friend by ID.
+      tags:
+        - Friends
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: friend_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Friend added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Friend'
+        '400':
+          description: Cannot add self as a friend error
+        '401':
+          description: Invalid JWT token error
+        '404':
+          description: User with friend_id not found error
+        '409':
+          description: Already friends with user error
+    
+    delete:
+      summary: Remove Friend
+      description: Removes a friend by ID.
+      tags:
+        - Friends
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: friend_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Friend removed successfully
+        '400':
+          description: Not friends with user error
+        '401':
+          description: Invalid JWT token error
+        '404':
+          description: User with friend_id not found error
+
+  /api/notes/friends:
+    get:
+      summary: Get Friends' Notes
+      description: Returns a list of notes authored by friends.
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+
+  /api/notes/{note_id}:
+    get:
+      summary: Get Note by ID
+      description: Returns a note by ID.
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '401':
+          description: Invalid JWT token error
+        '403':
+          description: Not authorized to access note error
+        '404':
+          description: Note with note_id not found error
+
+    put:
+      summary: Update Note
+      description: Updates a note by ID.
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteUpdate'
+      responses:
+        '201':
+          description: Note updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '401':
+          description: Invalid JWT token error
+        '403':
+          description: Not authorized to update note error
+        '404':
+          description: Note with note_id not found error
+
+    delete:
+      summary: Delete Note
+      description: Deletes a note by ID.
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Note deleted successfully
+        '401':
+          description: Invalid JWT token error
+        '403':
+          description: Not authorized to delete note error
+        '404':
+          description: Note with note_id not found error
+
+  /api/notes/:
+    get:
+      summary: Get User's Notes
+      description: Returns a list of notes authored by the authenticated user.
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+
+    post:
+      summary: Create Note
+      description: Creates a new note.
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses:
+        '201':
+          description: Note created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '401':
+          description: Invalid JWT token error
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+      example:
+        id: 1
+        username: example_user
+
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      example:
+        username: updated_user
+        password: new_password
+
+    Friend:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        friend_id:
+          type: integer
+      example:
+        id: 1
+        user_id: 1
+        friend_id: 2
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        content:
+          type: string
+      example:
+        id: 1
+        user_id: 1
+        content: "Sample note content"
+
+    NoteCreate:
+      type: object
+      properties:
+        content:
+          type: string
+      example:
+        content: "New note content"
+
+    NoteUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+      example:
+        content: "Updated note content"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

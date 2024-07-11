@@ -28,6 +28,14 @@ class User(db.Model):
         order_by="desc(Note.timestamp)"
     )
 
+    def is_friend(self, friend_user_id):
+        return db.session.query(
+            Friend.query.filter(
+                (Friend.user_id == self.id) & 
+                (Friend.friend_id == friend_user_id)
+            ).exists()
+        ).scalar()
+
 class Friend(db.Model):
     __tablename__ = "friend"
     id = db.Column(db.Integer, primary_key=True)

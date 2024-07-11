@@ -1,4 +1,4 @@
-from flask import render_template, abort, jsonify, request
+from flask import abort, jsonify, request, url_for, redirect, render_template
 import config
 import datetime
 from config import db
@@ -17,10 +17,22 @@ app.register_blueprint(notes_bp, url_prefix='/api/notes')
 app.register_blueprint(friends_bp, url_prefix='/api/friends')
 
 
-@app.route("/")
+@app.route('/')
 def home():
-    people = User.query.all()
-    return render_template("home.html", people=people)
+    docs_url = url_for('redoc')
+    return f"""
+        <html>
+            <head><title>Welcome</title></head>
+            <body>
+                <h1>Welcome to the Flask API</h1>
+                <p>Please visit the <a href="{docs_url}">API documentation</a> for more information.</p>
+            </body>
+        </html>
+    """
+
+@app.route('/api/docs')
+def redoc():
+    return render_template("redoc.html")
 
 
 @app.route("/api/register", methods=["POST"])

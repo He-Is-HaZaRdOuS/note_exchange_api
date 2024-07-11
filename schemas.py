@@ -40,6 +40,7 @@ class FriendSchema(ma.SQLAlchemyAutoSchema):
 
 
 note_schema = NoteSchema()
+notes_schema = NoteSchema(many=True)
 user_schema = UserSchema()
 user_schema_no_password = UserSchemaNoPassword()
 users_schema_no_password = UserSchemaNoPassword(many=True)
