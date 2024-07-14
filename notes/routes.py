@@ -44,7 +44,7 @@ def read_one(note_id):
         return noNote(note_id)
 
 
-@notes_bp.route("/", methods=["GET"])
+@notes_bp.route("", methods=["GET"])
 @jwt_required()
 def read_all():
     current_user = get_jwt_identity()
@@ -75,7 +75,7 @@ def update(note_id):
     if existing_note:
         if existing_note.user_id != cuser.id:
             return notAuthorized()
-        
+
         update_note = note_schema.load(note, session=db.session)
         existing_note.content = update_note.content
         db.session.merge(existing_note)
@@ -98,7 +98,7 @@ def delete(note_id):
     if existing_note:
         if existing_note.user_id != cuser.id:
             return notAuthorized()
-        
+
         db.session.delete(existing_note)
         db.session.commit()
         return jsonify(message=f"Note with id {note_id} successfully deleted"), 200
@@ -106,7 +106,7 @@ def delete(note_id):
         return noNote()
 
 
-@notes_bp.route("/", methods=["POST"])
+@notes_bp.route("", methods=["POST"])
 @jwt_required()
 def create():
     try:
@@ -121,7 +121,7 @@ def create():
     if user:
         if cuser.id != int(user_id):
             return notAuthorized()
-        
+
         new_note = note_schema.load(note, session=db.session)
         user.notes.append(new_note)
         db.session.commit()

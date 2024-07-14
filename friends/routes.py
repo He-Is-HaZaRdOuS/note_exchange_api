@@ -9,7 +9,7 @@ from common_responses import invalidJWT, noUser, noJSON
 friends_bp = Blueprint('friends', __name__)
 
 
-@friends_bp.route("/", methods=["GET"])
+@friends_bp.route("", methods=["GET"])
 @jwt_required()
 def get_friends():
     current_user = get_jwt_identity()
@@ -18,13 +18,13 @@ def get_friends():
 
     if not cuser:
         return invalidJWT()
-    
+
     user_id = cuser.id
     friends_as_user = Friend.query.filter_by(user_id=user_id).all()
     friend_ids = {f.friend_id for f in friends_as_user}
     friend_ids.discard(user_id)
     friends = User.query.filter(User.id.in_(friend_ids)).all()
-    
+
     return jsonify(users_schema_no_password.dump(friends)), 200
 
 
@@ -37,17 +37,17 @@ def add_friend(friend_id):
 
     if not cuser:
         return invalidJWT()
-    
+
     if not fuser:
         return noUser(friend_id)
-    
+
     if cuser.id == fuser.id:
         response = jsonify({
             "error": "Bad request",
             "message": "Cannot add self as a friend"
         })
         return make_response(response, 400)
-    
+
     try:
         user_id = cuser.id
         friend = Friend(user_id=user_id, friend_id=friend_id)
@@ -72,10 +72,10 @@ def remove_friend(friend_id):
 
     if not cuser:
         return invalidJWT()
-    
+
     if not fuser:
         return noUser(friend_id)
-    
+
     friend_to_delete = Friend.query.filter((Friend.user_id == cuser.id) & (Friend.friend_id == friend_id)).first()
 
     if friend_to_delete:

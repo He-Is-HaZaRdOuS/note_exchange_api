@@ -5,7 +5,7 @@ from schemas import user_schema, user_schema_no_password, users_schema_no_passwo
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from common_responses import invalidJWT, noUser, notAuthorized, noJSON
+from common_responses import invalidJWT, noUser, notAuthorized, noJSON, invalidJSON
 
 users_bp = Blueprint('users', __name__)
 
@@ -20,49 +20,54 @@ def expired_token_callback(header, payload):
     }), 401
 
 
-@users_bp.route("/", methods=["GET"])
+@users_bp.route("", methods=["GET"])
 def read_all():
     users = User.query.all()
     return users_schema_no_password.dump(users)
 
 
-@users_bp.route("/<user_id>", methods=["GET"])
-def read_one(user_id):
-    user = User.query.filter(User.username == user_id).one_or_none()
+@users_bp.route("/<username>", methods=["GET"])
+def read_one(username):
+    user = User.query.filter(User.username == username).one_or_none()
 
     if user is not None:
         return user_schema_no_password.dump(user)
     else:
-        return noUser()
+        return noUser(username)
 
 
-@users_bp.route("/", methods=["PUT"])
+@users_bp.route("", methods=["PUT"])
 @jwt_required()
 def update():
     try:
         user = request.get_json()
     except BadRequest:
-        return noJSON()    
-    username = user.get("username")
-    print(request.headers)
+        return noJSON()
+    try:
+        username = user.get("username")
+        if username is None:
+            raise KeyError
+    except KeyError:
+        return invalidJSON()
+
     current_user = get_jwt_identity()
     existing_user = User.query.filter(User.username == username).one_or_none()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
 
     if not cuser:
         return invalidJWT()
-    
+
     if existing_user:
         if username != current_user['username']:
             return notAuthorized()
-        
+
         update_user = user_schema.load(user, session=db.session)
         existing_user.password = generate_password_hash(update_user.password)
         db.session.merge(existing_user)
         db.session.commit()
-        return user_schema_no_password.dump(existing_user), 201
+        return user_schema_no_password.dump(existing_user), 200
     else:
-        return noUser()
+        return noUser(username)
 
 
 @users_bp.route("/<username>", methods=["DELETE"])
@@ -75,10 +80,10 @@ def delete(username):
     if not cuser:
         return invalidJWT()
 
-    if existing_user.id != cuser.id:
-            return notAuthorized()
-
     if existing_user:
+        if existing_user.id != cuser.id:
+                return notAuthorized()
+
         db.session.delete(existing_user)
         db.session.commit()
         response = jsonify({
@@ -86,4 +91,4 @@ def delete(username):
         })
         return make_response(response, 200)
     else:
-        return noUser()
+        return noUser(username)

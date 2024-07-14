@@ -7,10 +7,10 @@ def invalidJWT():
     })
     return make_response(response, 401)
 
-def noUser(user_id):
+def noUser(username):
     response = jsonify({
-        "error": "User not found",
-        "message": f"User with id {user_id} does not exist in the database"
+        "error": "User Not Found",
+        "message": f"User with username {username} does not exist in the database"
     })
     return make_response(response, 404)
 
@@ -30,7 +30,14 @@ def notAuthorized():
 
 def noJSON():
     response = jsonify({
-        "error": "Bad request",
+        "error": "Bad Request",
         "message": "Could not load JSON from request"
+    })
+    return make_response(response, 400)
+
+def invalidJSON():
+    response = jsonify({
+        "error": "Bad Request",
+        "message": "Invalid JSON body"
     })
     return make_response(response, 400)
