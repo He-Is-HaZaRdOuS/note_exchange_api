@@ -14,7 +14,6 @@ friends_bp = Blueprint('friends', __name__)
 def get_friends():
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
-    print(current_user)
 
     if not cuser:
         return invalidJWT()
@@ -28,29 +27,29 @@ def get_friends():
     return jsonify(users_schema_no_password.dump(friends)), 200
 
 
-@friends_bp.route("/<friend_id>", methods=["POST"])
+@friends_bp.route("/<friend_username>", methods=["POST"])
 @jwt_required()
-def add_friend(friend_id):
+def add_friend(friend_username):
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
-    fuser = User.query.filter(User.id == friend_id).one_or_none()
+    fuser = User.query.filter(User.username == friend_username).one_or_none()
 
     if not cuser:
         return invalidJWT()
 
     if not fuser:
-        return noUser(friend_id)
+        return noUser(friend_username)
 
     if cuser.id == fuser.id:
         response = jsonify({
-            "error": "Bad request",
-            "message": "Cannot add self as a friend"
+            "error": "Bad Request",
+            "message": "Cannot add yourself as a Friend"
         })
-        return make_response(response, 400)
+        return make_response(response, 406)
 
     try:
         user_id = cuser.id
-        friend = Friend(user_id=user_id, friend_id=friend_id)
+        friend = Friend(user_id=user_id, friend_id=fuser.id)
         db.session.add(friend)
         db.session.commit()
         return jsonify(friend_schema.dump(friend)), 201
@@ -58,36 +57,36 @@ def add_friend(friend_id):
         db.session.rollback()
         response = jsonify({
             "error": "Conflict",
-            "message": f"Already friends with user id {friend_id}"
+            "message": f"Already Friends with user {friend_username}"
         })
         return make_response(response, 406)
 
 
-@friends_bp.route("/<friend_id>", methods=["DELETE"])
+@friends_bp.route("/<friend_username>", methods=["DELETE"])
 @jwt_required()
-def remove_friend(friend_id):
+def remove_friend(friend_username):
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
-    fuser = User.query.filter(User.id == friend_id).one_or_none()
+    fuser = User.query.filter(User.username == friend_username).one_or_none()
 
     if not cuser:
         return invalidJWT()
 
     if not fuser:
-        return noUser(friend_id)
+        return noUser(friend_username)
 
-    friend_to_delete = Friend.query.filter((Friend.user_id == cuser.id) & (Friend.friend_id == friend_id)).first()
+    friend_to_delete = Friend.query.filter((Friend.user_id == cuser.id) & (Friend.friend_id == fuser.id)).first()
 
     if friend_to_delete:
         db.session.delete(friend_to_delete)
         db.session.commit()
         response = jsonify({
-            "message": f"Removed friend id {friend_id}"
+            "message": f"Removed Friend {friend_username}"
         })
         return make_response(response, 200)
     else:
         response = jsonify({
             "error": "Bad request",
-            "message": f"Not friends with user id {friend_id}"
+            "message": f"Not Friends with user {friend_username}"
         })
         return make_response(response, 400)

@@ -2,7 +2,8 @@ import unittest
 import json
 from tests.base_test import BaseTestCase
 
-class TestAuthenticationRoutes(BaseTestCase):
+
+class TestUserRoutes(BaseTestCase):
 
     def test_read_all_users(self):
         self._create_test_user()
@@ -77,10 +78,16 @@ class TestAuthenticationRoutes(BaseTestCase):
 
     def test_update_user_invalid_jwt(self):
         self._create_test_user
+        self._create_test_user(username='tempuser', password='temppassword')
+        login_response = self.client.post('/api/login', data=json.dumps({
+            'username': 'tempuser',
+            'password': 'temppassword'
+        }), content_type='application/json')
+        self.client.delete('/api/users/tempuser', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.put('/api/users', data=json.dumps({
             'username': 'wronguser',
             'password': 'newpassword'
-        }), headers={'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyMDg5NDEzNiwianRpIjoiMzJhY2FjYTMtMjAzOC00YjAyLWE2YTEtNWJiMDkzOTBhNzQzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6Im5vdXNlciJ9LCJuYmYiOjE3MjA4OTQxMzYsImNzcmYiOiIzMGQ1YThkOC1kMzVlLTQyZjktYmY1ZS0xM2YwYTg3MWI1YjMiLCJleHAiOjE3MjA5ODA1MzZ9.MiHCygDrGyxTfOUP_OIus6so_hBzvN03O3DWGVz9F_Y'}, content_type='application/json')
+        }), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Unauthorized')
@@ -120,12 +127,17 @@ class TestAuthenticationRoutes(BaseTestCase):
             'password': 'testpassword'
         }), content_type='application/json')
         response = self.client.delete('/api/users/testuser', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
-        print(response.data)
         self.assertEqual(response.status_code, 200)
 
     def test_delete_user_invalid_jwt(self):
         self._create_test_user()
-        response = self.client.delete('/api/users/testuser', headers={'Authorization' : f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyMDg5NDEzNiwianRpIjoiMzJhY2FjYTMtMjAzOC00YjAyLWE2YTEtNWJiMDkzOTBhNzQzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6Im5vdXNlciJ9LCJuYmYiOjE3MjA4OTQxMzYsImNzcmYiOiIzMGQ1YThkOC1kMzVlLTQyZjktYmY1ZS0xM2YwYTg3MWI1YjMiLCJleHAiOjE3MjA5ODA1MzZ9.MiHCygDrGyxTfOUP_OIus6so_hBzvN03O3DWGVz9F_Y'})
+        self._create_test_user(username='tempuser', password='temppassword')
+        login_response = self.client.post('/api/login', data=json.dumps({
+            'username': 'tempuser',
+            'password': 'temppassword'
+        }), content_type='application/json')
+        self.client.delete('/api/users/tempuser', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
+        response = self.client.delete('/api/users/testuser', headers={'Authorization' : f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Unauthorized')

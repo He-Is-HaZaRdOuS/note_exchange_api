@@ -23,7 +23,7 @@ Then initialize the database:
 Finally, start the development web server:
 
 ```console
-(venv) $ python run.py
+(venv) $ python run_app.py
 ```
 
 To run the tests, use the following command

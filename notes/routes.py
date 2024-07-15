@@ -4,7 +4,7 @@ from models import Note, User, Friend
 from schemas import note_schema, notes_schema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest
-from common_responses import invalidJWT, noUser, noNote, notAuthorized, noJSON
+from common_responses import invalidJWT, noUser, noNote, notAuthorized, noJSON, noUserID, invalidJSON
 
 notes_bp = Blueprint('notes', __name__)
 
@@ -80,9 +80,9 @@ def update(note_id):
         existing_note.content = update_note.content
         db.session.merge(existing_note)
         db.session.commit()
-        return note_schema.dump(existing_note), 201
+        return note_schema.dump(existing_note), 200
     else:
-        return noNote()
+        return noNote(note_id)
 
 
 @notes_bp.route("/<note_id>", methods=["DELETE"])
@@ -103,7 +103,7 @@ def delete(note_id):
         db.session.commit()
         return jsonify(message=f"Note with id {note_id} successfully deleted"), 200
     else:
-        return noNote()
+        return noNote(note_id)
 
 
 @notes_bp.route("", methods=["POST"])
@@ -111,14 +111,20 @@ def delete(note_id):
 def create():
     try:
         note = request.get_json()
+        if note.get('content') is None or note.get('user_id') is None:
+            raise KeyError
     except BadRequest:
         return noJSON()
+    except KeyError:
+        return invalidJSON()
     user_id = note.get("user_id")
     user = User.query.filter(User.id == user_id).one_or_none()
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
 
     if user:
+        if not cuser:
+            return invalidJWT()
         if cuser.id != int(user_id):
             return notAuthorized()
 
@@ -127,4 +133,4 @@ def create():
         db.session.commit()
         return jsonify(note_schema.dump(new_note)), 201
     else:
-        return noUser()
+        return noUserID(user_id)

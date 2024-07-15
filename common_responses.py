@@ -14,6 +14,13 @@ def noUser(username):
     })
     return make_response(response, 404)
 
+def noUserID(user_id):
+    response = jsonify({
+        "error": "User Not Found",
+        "message": f"User with id {user_id} does not exist in the database"
+    })
+    return make_response(response, 404)
+
 def noNote(note_id):
     response = jsonify({
         "error": "Note not found",
