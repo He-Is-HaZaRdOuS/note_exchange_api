@@ -1,5 +1,22 @@
-# Python REST APIs With Flask, Marshmallow, SQLAlchemy, JWT, Redoc and Swagger
+# Python REST APIs With Flask
 
+### MariaDB
+This project uses MariaDB as the database. You can install MariaDB on your machine by following the instructions on the [official website](https://mariadb.org/).
+
+After installing MariaDB, you can create a database and a user with the following commands:
+
+```console
+$ mariadb -u root -p
+MariaDB [(none)]> CREATE DATABASE users;
+MariaDB [(none)]> CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON users.* TO 'user'@'localhost';
+MariaDB [(none)]> FLUSH PRIVILEGES;
+MariaDB [(none)]> EXIT;
+```
+
+If you would like to use a different database name, user, or password, you can update the `config.toml` file in the `rp_flask_api/` folder.
+
+### Installation & Running
 First, navigate to the `rp_flask_api/` folder and create a virtual environment:
 
 ```console
@@ -14,9 +31,8 @@ Install the pinned dependencies from `requirements.txt`:
 (venv) $ python -m pip install -r requirements.txt
 ```
 
-Then initialize the database:
+Initialize the database:
 ```console
-(venv) $ cd rp_flask_api
 (venv) $ python build_database.py
 ```
 
@@ -26,9 +42,31 @@ Finally, start the development web server:
 (venv) $ python run_app.py
 ```
 
-To run the tests, use the following command
+To see your home page, visit `http://127.0.0.1:8000`. You can find the Swagger UI API documentation on `http://127.0.0.1:8000/api/docs`.
+
+
+### Testing
+To run the tests, you need to set up a test database. You can do this by running the following commands:
+
 ```console
-(venv) $ python run_tests.py
+$ myariadb -u root -p
+MariaDB [(none)]> CREATE DATABASE tests;
+MariaDB [(none)]> CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'testpassword';
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON tests.* TO 'test'@'localhost';
+MariaDB [(none)]> FLUSH PRIVILEGES;
+MariaDB [(none)]> EXIT;
 ```
 
-To see your home page, visit `http://127.0.0.1:8000`. You can find the Swagger UI API documentation on `http://127.0.0.1:8000/api/docs`.
+If you would like to use a different database name, user, or password, you can update the `config.toml` file in the `rp_flask_api/` folder.
+
+After setting up the test database, you can run the tests with the following command
+
+```console
+(venv) $ python run_unit_tests.py
+```
+
+If you would like to see unit test coverage, you can run the following command:
+
+```console
+(venv) $ python run_coverage.py
+```

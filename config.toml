@@ -1,0 +1,14 @@
+# This is a sample configuration file for the database connection
+[database]
+host = "localhost"
+port = 3306
+name = "users"
+user = "user"
+password = "password"
+
+[test_database]
+host = "localhost"
+port = 3306
+name = "tests"
+user = "testuser"
+password = "testpassword"
