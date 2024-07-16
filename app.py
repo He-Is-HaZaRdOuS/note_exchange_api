@@ -12,6 +12,8 @@ from schemas import user_schema
 from users.routes import users_bp
 from notes.routes import notes_bp
 from friends.routes import friends_bp
+from helpers import username_is_valid, password_is_valid
+
 
 app = config.app
 
@@ -74,6 +76,20 @@ def register():
         })
         return make_response(response, 406)
 
+    if not username_is_valid(username):
+        response = jsonify({
+            "error": "Invalid username",
+            "message": "Username must be at least 4 characters long and at most 12 characters long, contain only alphanumeric characters, and be all lowercase"
+        })
+        return make_response(response, 406)
+
+    if not password_is_valid(password):
+        response = jsonify({
+            "error": "Invalid password",
+            "message": "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
+        })
+        return make_response(response, 406)
+
     new_user = user_schema.load(user, session=db.session)
     new_user.password = generate_password_hash(password)
     db.session.add(new_user)
@@ -94,6 +110,13 @@ def login():
     except KeyError:
         return invalidJSON()
     existing_user = User.query.filter(User.username == username).one_or_none()
+
+    if not username_is_valid(username):
+        response = jsonify({
+            "error": "Invalid username",
+            "message": "Username must be at least 4 characters long and at most 12 characters long, contain only alphanumeric characters, and be all lowercase"
+        })
+        return make_response(response, 406)
 
     if existing_user is not None and check_password_hash(existing_user.password, password):
         access_token = create_access_token(identity={'username': username}, expires_delta=datetime.timedelta(hours=24))

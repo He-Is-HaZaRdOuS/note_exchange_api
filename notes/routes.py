@@ -77,6 +77,7 @@ def update(note_id):
             return notAuthorized()
 
         update_note = note_schema.load(note, session=db.session)
+        update_note.content = update_note.content.strip()
         existing_note.content = update_note.content
         db.session.merge(existing_note)
         db.session.commit()
@@ -129,6 +130,7 @@ def create():
             return notAuthorized()
 
         new_note = note_schema.load(note, session=db.session)
+        new_note.content = new_note.content.strip()
         user.notes.append(new_note)
         db.session.commit()
         return jsonify(note_schema.dump(new_note)), 201
