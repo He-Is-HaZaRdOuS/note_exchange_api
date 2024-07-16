@@ -11,7 +11,7 @@ from common_responses import invalidJSON, noJSON
 from schemas import user_schema, user_schema_private
 from users.routes import users_bp
 from users.notes.routes import notes_bp
-from friends.routes import friends_bp
+from users.friends.routes import friends_bp
 
 app = config.app
 

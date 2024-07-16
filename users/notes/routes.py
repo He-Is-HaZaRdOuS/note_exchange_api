@@ -14,12 +14,16 @@ notes_bp = Blueprint('notes', __name__)
 def get_friends_notes(user_id):
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
+    existing_user = User.query.filter(User.id == user_id).one_or_none()
+
+    if existing_user is None:
+        return noUserID(user_id)
 
     if not cuser:
         return invalidJWT()
 
-    if int(user_id) != cuser.id:
-        return notAuthorized()
+    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id:
+            return notAuthorized()
 
     friends_who_added_me_subquery = db.session.query(Friend.user_id).filter(Friend.friend_id == cuser.id).subquery()
     friends_notes_query = Note.query.filter(Note.user_id.in_(friends_who_added_me_subquery))
@@ -33,19 +37,20 @@ def read_one(user_id, note_id):
     current_user = get_jwt_identity()
     cuser = User.query.filter(User.username == current_user['username']).one_or_none()
     note = Note.query.get(note_id)
+    existing_user = User.query.filter(User.id == user_id).one_or_none()
 
     if not cuser:
         return invalidJWT()
 
-    if int(user_id) != cuser.id:
-        return notAuthorized()
+    if existing_user is None:
+        return noUserID(user_id)
+
+    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id:
+            return notAuthorized()
 
     if note is not None:
         note_author = User.query.get(note.user_id)
-        if note.user_id == cuser.id or note_author.is_friend(cuser.id):
-            return note_schema.dump(note)
-        else:
-            return notAuthorized()
+        return note_schema.dump(note)
     else:
         return noNote(note_id)
 
