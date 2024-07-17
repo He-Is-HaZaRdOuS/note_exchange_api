@@ -7,7 +7,7 @@ from flask_jwt_extended import JWTManager
 
 
 # Set the configuration type based on the CONFIG environment variable
-config_type = os.getenv('CONFIG', 'DEVELOPMENT')
+config_type = os.getenv('CONFIG')
 
 class Config:
     def __init__(self):

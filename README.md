@@ -21,7 +21,7 @@ First, navigate to the `rp_flask_api/` folder and create a virtual environment:
 
 ```console
 $ cd rp_flask_api
-$ python -m venv venv
+$ python3 -m venv venv
 $ source venv/bin/activate
 ```
 
