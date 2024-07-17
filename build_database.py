@@ -1,4 +1,9 @@
+import os
 from datetime import datetime
+
+# Set the environment variable to determine the app configuration
+os.environ['CONFIG'] = 'DEVELOPMENT'
+
 from config import app, db
 from models import User, Note, Friend
 

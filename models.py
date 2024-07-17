@@ -12,13 +12,13 @@ class Friend(db.Model):
     )
 
     user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('friends', cascade="all, delete-orphan"))
-    friend = db.relationship('User', foreign_keys=[friend_id], backref=db.backref('friends_with', cascade="all, delete-orphan"))
+    friend = db.relationship('User', foreign_keys=[friend_id], backref=db.backref('friends_of', cascade="all, delete-orphan"))
 
 class Note(db.Model):
     __tablename__ = "note"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
-    content = db.Column(db.String, nullable=False)
+    content = db.Column(db.String(240), nullable=False)
     timestamp = db.Column(
         db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
     )
