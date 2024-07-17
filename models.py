@@ -12,7 +12,7 @@ class Friend(db.Model):
     )
 
     user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('friends', cascade="all, delete-orphan"))
-    friend = db.relationship('User', foreign_keys=[friend_id], backref=db.backref('friends_with', cascade="all, delete-orphan"))
+    friend = db.relationship('User', foreign_keys=[friend_id], backref=db.backref('friends_of', cascade="all, delete-orphan"))
 
 class Note(db.Model):
     __tablename__ = "note"

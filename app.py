@@ -8,17 +8,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import create_access_token
 from common_responses import invalidJSON, noJSON
-from schemas import user_schema
+from schemas import user_schema, user_schema_private
 from users.routes import users_bp
-from notes.routes import notes_bp
-from friends.routes import friends_bp
+from users.notes.routes import notes_bp
+from users.friends.routes import friends_bp
 
 app = config.app
 
 # Register blueprints' routes with the app and set their URL prefixes
-app.register_blueprint(users_bp, url_prefix='/api/users')
-app.register_blueprint(notes_bp, url_prefix='/api/notes')
-app.register_blueprint(friends_bp, url_prefix='/api/friends')
+app.register_blueprint(users_bp, url_prefix='/api/users/<user_id>')
+app.register_blueprint(notes_bp, url_prefix='/api/users/<user_id>/notes')
+app.register_blueprint(friends_bp, url_prefix='/api/users/<user_id>/friends')
 
 
 # Define the home route
@@ -78,7 +78,7 @@ def register():
     new_user.password = generate_password_hash(password)
     db.session.add(new_user)
     db.session.commit()
-    return jsonify(user_schema.dump(new_user)), 201
+    return jsonify(user_schema_private.dump(new_user)), 201
 
 
 @app.route("/api/login", methods=["POST"])
@@ -97,7 +97,12 @@ def login():
 
     if existing_user is not None and check_password_hash(existing_user.password, password):
         access_token = create_access_token(identity={'username': username}, expires_delta=datetime.timedelta(hours=24))
-        return jsonify(access_token=access_token), 200
+        response = jsonify({
+            "access_token": f"{access_token}",
+            "id": f"{existing_user.id}"
+        })
+        return make_response(response, 200)
+
     response = jsonify({
         "error": "Unauthorized",
         "message": "Invalid credentials"
