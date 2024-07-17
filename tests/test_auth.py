@@ -7,11 +7,31 @@ class TestAuthenticationRoutes(BaseTestCase):
     def test_register(self):
         response = self.client.post('/api/register', data=json.dumps({
             'username': 'newuser',
-            'password': 'newpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
         self.assertEqual(data['username'], 'newuser')
+
+    def test_register_invalid_password(self):
+        response = self.client.post('/api/register', data=json.dumps({
+            'username': 'newuser',
+            'password': 'simple'
+        }), content_type='application/json')
+        self.assertEqual(response.status_code, 406)
+        data = json.loads(response.data)
+        self.assertEqual(data['error'], 'Invalid Password')
+        self.assertEqual(data['message'], 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character')
+
+    def test_register_invalid_username(self):
+        response = self.client.post('/api/register', data=json.dumps({
+            'username': 'newuser!',
+            'password': 'C0mpl3x!'
+        }), content_type='application/json')
+        self.assertEqual(response.status_code, 406)
+        data = json.loads(response.data)
+        self.assertEqual(data['error'], 'Invalid Username')
+        self.assertEqual(data['message'], 'Username must be at least 4 characters long and at most 12 characters long, contain only alphanumeric characters, and be all lowercase')
 
     def test_register_existing(self):
         self._create_test_user()
@@ -49,6 +69,16 @@ class TestAuthenticationRoutes(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertIn('access_token', data)
+
+    def test_login_invalid_username(self):
+        response = self.client.post('/api/login', data=json.dumps({
+            'username': 'INVALID_USER',
+            'password': 'testpassword'
+        }), content_type='application/json')
+        self.assertEqual(response.status_code, 406)
+        data = json.loads(response.data)
+        self.assertEqual(data['error'], 'Invalid Username')
+        self.assertEqual(data['message'], 'Username must be at least 4 characters long and at most 12 characters long, contain only alphanumeric characters, and be all lowercase')
 
     def test_login_invalid(self):
         response = self.client.post('/api/login', data=json.dumps({
