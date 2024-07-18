@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash
 from app import app, config
 from config import db
 from models import User, Note, Friend
+import toml
 
 class BaseTestCase(unittest.TestCase):
 
@@ -14,10 +15,35 @@ class BaseTestCase(unittest.TestCase):
         try:
             with app.app_context():
                 cls.engine = db.engine
-            cls.Session = sessionmaker(bind=cls.engine)
+                cls.Session = sessionmaker(bind=cls.engine)
+
+                # Drop all tables and recreate them
+                db.metadata.drop_all(cls.engine)
+                db.metadata.create_all(cls.engine)
         except OperationalError as e:
             print(f"Error connecting to the database: {e}")
             cls.engine = None
+
+    @classmethod
+    def _create_admin_users(cls):
+        try:
+            # Load the elevated usernames from the config file
+            with open('config.toml', 'r') as file:
+                config = toml.load(file)
+            elevated_usernames = config['users']['elevated_usernames']
+            for i, username in enumerate(elevated_usernames):
+                admin_user = User(
+                    id=i,  # Example ID calculation
+                    username=username,
+                    password=generate_password_hash(username),  # Example password hashing
+                    admin=True
+                )
+                cls.session = cls.Session()
+                cls.session.add(admin_user)
+                cls.session.commit()
+                cls.session.close()
+        except SQLAlchemyError as e:
+            print(f"Error creating admin users: {e}")
 
     @classmethod
     def tearDownClass(cls):
@@ -36,6 +62,8 @@ class BaseTestCase(unittest.TestCase):
         try:
             self.session = self.Session()  # Create a new session for each test
             db.metadata.create_all(self.engine)  # Create all tables before each test
+            # Create admin users
+            self._create_admin_users()
         except SQLAlchemyError as e:
             print(f"Error during setup: {e}")
             self.skipTest(f"Skipping test due to setup issues: {e}")
@@ -58,6 +86,7 @@ class BaseTestCase(unittest.TestCase):
             user = User(username=username, password=generate_password_hash(password))
             self.session.add(user)
             self.session.commit()
+            return user.id
         except SQLAlchemyError as e:
             print(f"Error creating test user: {e}")
             self.fail(f"Failed to create test user: {e}")

@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from config import db
 from models import Note, User, Friend
-from schemas import note_schema, notes_schema
+from schemas import note_schema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest
+from sqlalchemy import select
 from common_responses import invalidJWT, noUser, noNote, notAuthorized, noJSON, noUserID, invalidJSON
 
 notes_bp = Blueprint('notes', __name__)
@@ -22,13 +23,13 @@ def get_friends_notes(user_id):
     if not cuser:
         return invalidJWT()
 
-    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id:
+    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id and cuser.admin is False:
             return notAuthorized()
 
     friends_who_added_me_subquery = db.session.query(Friend.user_id).filter(Friend.friend_id == cuser.id).subquery()
-    friends_notes_query = Note.query.filter(Note.user_id.in_(friends_who_added_me_subquery))
+    friends_notes_query = Note.query.filter(Note.user_id.in_(select(friends_who_added_me_subquery)))
     friends_notes = friends_notes_query.all()
-    return notes_schema.dump(friends_notes)
+    return note_schema.dump(friends_notes, many=True)
 
 
 @notes_bp.route("/<note_id>", methods=["GET"])
@@ -45,7 +46,7 @@ def read_one(user_id, note_id):
     if existing_user is None:
         return noUserID(user_id)
 
-    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id:
+    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id and cuser.admin is False:
             return notAuthorized()
 
     if note is not None:
@@ -68,12 +69,12 @@ def read_all(user_id):
     if existing_user is None:
         return noUserID(user_id)
 
-    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id:
+    if not existing_user.is_friend(cuser.id) and existing_user.id != cuser.id and cuser.admin is False:
         return notAuthorized()
 
     my_notes = Note.query.filter_by(user_id=existing_user.id).all()
 
-    return notes_schema.dump(my_notes)
+    return note_schema.dump(my_notes, many=True)
 
 
 @notes_bp.route("/<note_id>", methods=["PUT"])
@@ -90,7 +91,7 @@ def update(user_id, note_id):
     if not cuser:
         return invalidJWT()
 
-    if int(user_id) != cuser.id:
+    if int(user_id) != cuser.id and cuser.admin is False:
         return notAuthorized()
 
     if existing_note:
@@ -117,7 +118,7 @@ def delete(user_id, note_id):
     if not cuser:
         return invalidJWT()
 
-    if int(user_id) != cuser.id:
+    if int(user_id) != cuser.id and cuser.admin is False:
         return notAuthorized()
 
     if existing_note:
@@ -150,7 +151,7 @@ def create(user_id):
     if user:
         if not cuser:
             return invalidJWT()
-        if cuser.id != int(user_id):
+        if cuser.id != int(user_id) and cuser.admin is False:
             return notAuthorized()
 
         new_note = note_schema.load(note, session=db.session)

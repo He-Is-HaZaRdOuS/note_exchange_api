@@ -12,3 +12,38 @@ port = 3306
 name = "tests"
 user = "testuser"
 password = "testpassword"
+
+[users]
+reserved_usernames = [
+    "admin",
+    "root",
+    "superuser",
+    "administrator",
+    "null",
+    "system",
+    "user",
+    "username",
+    "password",
+    "login",
+    "logout",
+    "signup",
+    "signin",
+    "signout",
+    "register",
+    "unregister",
+    "delete",
+    "remove",
+    "edit",
+    "update",
+    "change",
+    "profile",
+    "account",
+    "settings",
+    "config",
+    "configuration",
+    "preferences",
+    "preference",
+    "home",
+    "dashboard",
+]
+elevated_usernames = ["admin"]

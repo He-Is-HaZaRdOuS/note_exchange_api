@@ -12,12 +12,12 @@ from schemas import user_schema, user_schema_private
 from users.routes import users_bp
 from users.notes.routes import notes_bp
 from users.friends.routes import friends_bp
-from helpers import username_is_valid, password_is_valid
+from helpers import username_is_valid, password_is_valid, username_is_reserved
 
 app = config.app
 
 # Register blueprints' routes with the app and set their URL prefixes
-app.register_blueprint(users_bp, url_prefix='/api/users/<user_id>')
+app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(notes_bp, url_prefix='/api/users/<user_id>/notes')
 app.register_blueprint(friends_bp, url_prefix='/api/users/<user_id>/friends')
 
@@ -68,6 +68,14 @@ def register():
     except KeyError:
         return invalidJSON()
     existing_user = User.query.filter(User.username == username).one_or_none()
+
+    if username_is_reserved(username):
+        response = jsonify({
+            "error": "Invalid Username",
+            "message": "Username is reserved"
+        })
+        return make_response(response, 406)
+
     if existing_user is not None:
         response = jsonify({
             "error": "Username already in use",
@@ -110,12 +118,13 @@ def login():
         return invalidJSON()
     existing_user = User.query.filter(User.username == username).one_or_none()
 
-    if not username_is_valid(username):
-        response = jsonify({
-            "error": "Invalid Username",
-            "message": "Username must be at least 4 characters long and at most 12 characters long, contain only alphanumeric characters, and be all lowercase"
-        })
-        return make_response(response, 406)
+    if not username_is_reserved(username):
+        if not username_is_valid(username):
+            response = jsonify({
+                "error": "Invalid Username",
+                "message": "Username must be at least 4 characters long and at most 12 characters long, contain only alphanumeric characters, and be all lowercase"
+            })
+            return make_response(response, 406)
 
     if existing_user is not None and check_password_hash(existing_user.password, password):
         access_token = create_access_token(identity={'username': username}, expires_delta=datetime.timedelta(hours=24))
