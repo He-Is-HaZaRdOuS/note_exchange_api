@@ -22,10 +22,10 @@ class TestDatabaseState(BaseTestCase):
     def test_user_deletion_cascades_1(self):
         with self.app.app_context():
             # Create test users and notes
-            self._create_test_user(username='testuser', password='testpassword')
-            self._create_test_user(username='testuser2', password='testpassword2')
-            self._create_test_note(1, 'testcontent1')
-            self._create_test_note(2, 'testcontent2')
+            id_2 = self._create_test_user(username='testuser', password='testpassword')
+            id_3 = self._create_test_user(username='testuser2', password='testpassword2')
+            note_id_1 = self._create_test_note(id_2, 'testcontent1')
+            note_id_2 = self._create_test_note(id_3, 'testcontent2')
 
             # Establish friendship
             user1 = User.query.filter_by(username='testuser').one()
@@ -51,10 +51,10 @@ class TestDatabaseState(BaseTestCase):
     def test_user_deletion_cascades_2(self):
         with self.app.app_context():
             # Create test users and notes
-            self._create_test_user(username='testuser', password='testpassword')
-            self._create_test_user(username='testuser2', password='testpassword2')
-            self._create_test_note(1, 'testcontent1')
-            self._create_test_note(2, 'testcontent2')
+            id_2 = self._create_test_user(username='testuser', password='testpassword')
+            id_3 = self._create_test_user(username='testuser2', password='testpassword2')
+            note_id_1 = self._create_test_note(id_2, 'testcontent1')
+            note_id_2 = self._create_test_note(id_3, 'testcontent2')
 
             # Establish friendship
             user1 = User.query.filter_by(username='testuser').one()

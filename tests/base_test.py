@@ -96,6 +96,7 @@ class BaseTestCase(unittest.TestCase):
             note = Note(content=content, user_id=user_id)
             self.session.add(note)
             self.session.commit()
+            return note.id
         except SQLAlchemyError as e:
             print(f"Error creating test note: {e}")
             self.fail(f"Failed to create test note: {e}")

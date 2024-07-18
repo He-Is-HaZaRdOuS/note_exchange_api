@@ -27,7 +27,7 @@ class TestNoteRoutes(BaseTestCase):
             'password': 'temppassword'
         }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
-        response = self.client.post('/api/users/2/notes', data=json.dumps({'content': 'testcontent'}),  headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.post(f'/api/users/{id_2}/notes', data=json.dumps({'content': 'testcontent'}),  headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Unauthorized')
@@ -84,12 +84,12 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_note(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['content'], 'testcontent')
@@ -99,12 +99,12 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_note_user_not_found(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.get(f'/api/users/100/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.get(f'/api/users/100/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'User Not Found')
@@ -112,14 +112,14 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_note_different_user(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_3, 'testcontent2')
+        note_id_2 = self._create_test_note(id_3, 'testcontent2')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.get(f'/api/users/{id_3}/notes/2', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.get(f'/api/users/{id_3}/notes/{note_id_2}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Forbidden')
@@ -127,14 +127,14 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_note_invalid_jwt(self):
         id_2 = self._create_test_user()
-        self._create_test_note(1, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         id_3 = self._create_test_user(username='tempuser', password='temppassword')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'tempuser',
             'password': 'temppassword'
         }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
-        response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Unauthorized')
@@ -142,21 +142,21 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_note_not_found(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/2', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Note not found')
-        self.assertEqual(data['message'], 'Note with id 2 does not exist in the database')
+        self.assertEqual(data['message'], 'Note with id 100 does not exist in the database')
 
     def test_get_notes(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
-        self._create_test_note(id_2, 'testcontent2')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
+        note_id_2 = self._create_test_note(id_2, 'testcontent2')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
@@ -173,11 +173,11 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_notes_invalid_jwt(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
-        self._create_test_note(id_2, 'testcontent2')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
+        note_id_2 = self._create_test_note(id_2, 'testcontent2')
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_3, 'testcontent3')
-        self._create_test_note(id_2, 'testcontent4')
+        note_id_3 = self._create_test_note(id_3, 'testcontent3')
+        note_id_4 = self._create_test_note(id_2, 'testcontent4')
         id_4 = self._create_test_user(username='tempuser', password='temppassword')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'tempuser',
@@ -192,8 +192,8 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_notes_user_not_found(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
-        self._create_test_note(id_2, 'testcontent2')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
+        note_id_2 = self._create_test_note(id_2, 'testcontent2')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
@@ -206,16 +206,16 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_get_notes_different_user(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
-        self._create_test_note(id_2, 'testcontent2')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
+        note_id_2 = self._create_test_note(id_2, 'testcontent2')
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_3, 'testcontent3')
-        self._create_test_note(id_3, 'testcontent4')
+        note_id_3 = self._create_test_note(id_3, 'testcontent3')
+        note_id_4 = self._create_test_note(id_3, 'testcontent4')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.get(f'/api/users/3/notes', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.get(f'/api/users/{id_3}/notes', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Forbidden')
@@ -223,12 +223,12 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_update_note(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['content'], 'newcontent')
@@ -239,12 +239,12 @@ class TestNoteRoutes(BaseTestCase):
     def test_update_note_different_owner(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser2',
             'password': 'testpassword2'
         }), content_type='application/json')
-        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Forbidden')
@@ -253,12 +253,12 @@ class TestNoteRoutes(BaseTestCase):
     def test_update_note_different_user(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser2',
             'password': 'testpassword2'
         }), content_type='application/json')
-        response = self.client.put(f'/api/users/{id_2}/notes/1', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.put(f'/api/users/{id_2}/notes/{note_id_1}', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Forbidden')
@@ -266,14 +266,14 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_update_note_invalid_jwt(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         id_3 = self._create_test_user(username='tempuser', password='temppassword')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'tempuser',
             'password': 'temppassword'
         }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
-        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Unauthorized')
@@ -281,25 +281,25 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_update_note_not_found(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/2', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Note not found')
-        self.assertEqual(data['message'], 'Note with id 2 does not exist in the database')
+        self.assertEqual(data['message'], 'Note with id 100 does not exist in the database')
 
     def test_update_note_no_json(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Bad Request')
@@ -307,39 +307,39 @@ class TestNoteRoutes(BaseTestCase):
 
     def test_delete_note(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
-        self.assertEqual(data['message'], 'Note with id 1 successfully deleted')
+        self.assertEqual(data['message'], f'Note with id {note_id_1} successfully deleted')
 
     def test_delete_note_not_found(self):
         id_2 = self._create_test_user()
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/2', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Note not found')
-        self.assertEqual(data['message'], 'Note with id 2 does not exist in the database')
+        self.assertEqual(data['message'], 'Note with id 100 does not exist in the database')
 
     def test_delete_note_invalid_jwt(self):
         id_2 = self._create_test_user()
-        self._create_test_note(1, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         id_3 = self._create_test_user(username='tempuser', password='temppassword')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'tempuser',
             'password': 'temppassword'
         }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
-        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/2', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 401)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Unauthorized')
@@ -348,12 +348,12 @@ class TestNoteRoutes(BaseTestCase):
     def test_delete_note_different_owner(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser2',
             'password': 'testpassword2'
         }), content_type='application/json')
-        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Forbidden')
@@ -362,12 +362,12 @@ class TestNoteRoutes(BaseTestCase):
     def test_delete_note_different_user(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user('testuser2', 'testpassword2')
-        self._create_test_note(id_2, 'testcontent')
+        note_id_1 = self._create_test_note(id_2, 'testcontent')
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser2',
             'password': 'testpassword2'
         }), content_type='application/json')
-        response = self.client.delete(f'/api/users/{id_2}/notes/1', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
+        response = self.client.delete(f'/api/users/{id_2}/notes/{note_id_1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Forbidden')
@@ -388,7 +388,6 @@ class TestNoteRoutes(BaseTestCase):
         self.client.post(f'/api/users/{json.loads(login_response_2.data)["id"]}/notes', data=json.dumps({'content': 'testcontent2'}), headers={'Authorization': f'Bearer {json.loads(login_response_2.data)["access_token"]}'}, content_type='application/json')
         response = self.client.post(f'/api/users/{json.loads(login_response_2.data)["id"]}/friends/{json.loads(login_response_1.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response_2.data)["access_token"]}'})
         response = self.client.get(f'/api/users/{json.loads(login_response_2.data)["id"]}/notes/friends', headers={'Authorization': f'Bearer {json.loads(login_response_1.data)["access_token"]}'})
-        #print(response.data)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(len(data), 1)
