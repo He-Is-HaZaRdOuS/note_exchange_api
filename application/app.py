@@ -1,25 +1,25 @@
 from flask import abort, jsonify, request, url_for, render_template, make_response
-import config
+import configuration.config as config
 import datetime
 import sqlite3
-from config import db
-from models import User
+from configuration.config import db
+from application.models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import create_access_token
-from common_responses import invalidJSON, noJSON
-from schemas import user_schema, user_schema_private
-from users.routes import users_bp
-from users.notes.routes import notes_bp
-from users.friends.routes import friends_bp
-from helpers import username_is_valid, password_is_valid, username_is_reserved
+from helpers.common_responses import invalidJSON, noJSON
+from application.schemas import user_schema, user_schema_private
+from api.users.routes import users_bp
+from api.users.notes.routes import notes_bp
+from api.users.friends.routes import friends_bp
+from helpers.input_validator import username_is_valid, password_is_valid, username_is_reserved
 
 app = config.app
 
 # Register blueprints' routes with the app and set their URL prefixes
 app.register_blueprint(users_bp, url_prefix='/api/users')
-app.register_blueprint(notes_bp, url_prefix='/api/users/<user_id>/notes')
-app.register_blueprint(friends_bp, url_prefix='/api/users/<user_id>/friends')
+app.register_blueprint(notes_bp, url_prefix='/api/users/<int:user_id>/notes')
+app.register_blueprint(friends_bp, url_prefix='/api/users/<int:user_id>/friends')
 
 
 # Define the home route

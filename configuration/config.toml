@@ -15,6 +15,10 @@ password = "testpassword"
 
 [users]
 reserved_usernames = [
+    "superuser",
+    "admin_user",
+    "admin_note",
+    "admin_friend",
     "admin",
     "root",
     "superuser",
@@ -46,4 +50,4 @@ reserved_usernames = [
     "home",
     "dashboard",
 ]
-elevated_usernames = ["admin"]
+elevated_usernames = ["superuser", "admin_user", "admin_note", "admin_friend"]

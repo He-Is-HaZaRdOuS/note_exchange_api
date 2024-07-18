@@ -3,9 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from werkzeug.security import generate_password_hash
-from app import app, config
-from config import db
-from models import User, Note, Friend
+from application.app import config, app
+from configuration.config import db
+from application.models import User, Note, Friend
 import toml
 
 class BaseTestCase(unittest.TestCase):
@@ -28,14 +28,14 @@ class BaseTestCase(unittest.TestCase):
     def _create_admin_users(cls):
         try:
             # Load the elevated usernames from the config file
-            with open('config.toml', 'r') as file:
+            with open('configuration/config.toml', 'r') as file:
                 config = toml.load(file)
             elevated_usernames = config['users']['elevated_usernames']
-            for i, username in enumerate(elevated_usernames):
+            for i, username in enumerate(elevated_usernames, start=1):
                 admin_user = User(
-                    id=i,  # Example ID calculation
+                    id=i,
                     username=username,
-                    password=generate_password_hash(username),  # Example password hashing
+                    password=generate_password_hash(username),
                     admin=True
                 )
                 cls.session = cls.Session()

@@ -11,7 +11,7 @@ def run_tests():
 
     # Discover and run tests
     loader = unittest.TestLoader()
-    tests = loader.discover('tests')  # Assuming your tests are in a 'tests' directory
+    tests = loader.discover('unit_tests')
     testRunner = unittest.TextTestRunner(verbosity=2)
     result = testRunner.run(tests)
 

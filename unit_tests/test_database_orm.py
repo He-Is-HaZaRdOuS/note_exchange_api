@@ -1,7 +1,7 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
-from models import User, Note, Friend, db
+from unit_tests.base_test import BaseTestCase
+from application.models import User, Note, Friend, db
 
 
 class TestDatabaseState(BaseTestCase):

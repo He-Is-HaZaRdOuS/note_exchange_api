@@ -1,6 +1,6 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
+from unit_tests.base_test import BaseTestCase
 
 class TestAuthenticationRoutes(BaseTestCase):
 

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from config import db
+from configuration.config import db
 
 class Friend(db.Model):
     __tablename__ = "friend"
@@ -39,6 +39,13 @@ class User(db.Model):
         single_parent=True,
         order_by="desc(Note.timestamp)"
     )
+    roles = db.relationship('Role', secondary='user_role')
+
+    def has_role(self, role_name):
+        return any(role.name == role_name for role in self.roles)
+
+    def has_permission(self, permission_name):
+        return any(role.has_permission(permission_name) for role in self.roles)
 
     def is_friend(self, friend_user_id):
         return db.session.query(
@@ -47,3 +54,29 @@ class User(db.Model):
                 (Friend.friend_id == friend_user_id)
             ).exists()
         ).scalar()
+
+class Role(db.Model):
+    __tablename__ = 'role'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, nullable=False)
+
+    permissions = db.relationship('Permission', secondary='role_permission')
+
+    def has_permission(self, permission_name):
+        return any(permission.name == permission_name for permission in self.permissions)
+
+class Permission(db.Model):
+    __tablename__ = 'permission'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, nullable=False)
+
+user_role = db.Table('user_role',
+    db.Column(
+        'user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
+)
+
+role_permission = db.Table('role_permission',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
+    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
+)

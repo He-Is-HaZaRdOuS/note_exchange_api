@@ -6,11 +6,11 @@ import toml
 # Set the environment variable to determine the app configuration
 os.environ['CONFIG'] = 'DEVELOPMENT'
 
-from config import app, db
-from models import User, Note, Friend
+from configuration.config import app, db
+from application.models import User, Note, Friend
 
 # Load the elevated usernames from the config file
-with open('config.toml', 'r') as file:
+with open('configuration/config.toml', 'r') as file:
     config = toml.load(file)
 elevated_usernames = config['users']['elevated_usernames']
 
@@ -18,11 +18,11 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    for i, username in enumerate(elevated_usernames):
+    for i, username in enumerate(elevated_usernames, start=1):
         admin_user = User(
             id=i,  # Generate a unique ID for each admin user
             username=username,
-            password=generate_password_hash(username),  # Using the username as the password for simplicity
+            password=generate_password_hash(username),
             admin=True
         )
         db.session.add(admin_user)

@@ -1,20 +1,21 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
+from base_test import BaseTestCase
 
 
 class TestUserRoutes(BaseTestCase):
 
     def test_read_all_users_admin(self):
+        id_2 = self._create_test_user()
         login_response = self.client.post('/api/login', data=json.dumps({
-            'username': 'admin',
-            'password': 'admin'
+            'username': 'superuser',
+            'password': 'superuser'
         }), content_type='application/json')
         response = self.client.get('/api/users', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['username'], 'admin')
+        self.assertEqual(data[0]['username'], 'testuser')
 
     def test_read_all_users_not_admin(self):
         id_2 = self._create_test_user()
@@ -81,8 +82,8 @@ class TestUserRoutes(BaseTestCase):
     def test_read_user_admin(self):
         id_2 = self._create_test_user()
         login_response = self.client.post('/api/login', data=json.dumps({
-            'username': 'admin',
-            'password': 'admin'
+            'username': 'superuser',
+            'password': 'superuser'
         }), content_type='application/json')
         response = self.client.get(f'/api/users/{id_2}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 200)
@@ -124,13 +125,13 @@ class TestUserRoutes(BaseTestCase):
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.put('/api/users/3', data=json.dumps({
+        response = self.client.put('/api/users/100', data=json.dumps({
             'password': 'newpassword'
         }), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'User Not Found')
-        self.assertEqual(data['message'], 'User with id 3 does not exist in the database')
+        self.assertEqual(data['message'], 'User with id 100 does not exist in the database')
 
     def test_update_user_invalid_jwt(self):
         id_2 = self._create_test_user()
@@ -166,7 +167,7 @@ class TestUserRoutes(BaseTestCase):
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.put(f'/api/users/{json.loads(login_response.data)["access_token"]}', data=json.dumps({
+        response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}', data=json.dumps({
             'wrongkey': 'newpassword'
         }), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 400)
@@ -177,8 +178,8 @@ class TestUserRoutes(BaseTestCase):
     def test_update_user_admin(self):
         id_2 = self._create_test_user()
         login_response = self.client.post('/api/login', data=json.dumps({
-            'username': 'admin',
-            'password': 'admin'
+            'username': 'superuser',
+            'password': 'superuser'
         }), content_type='application/json')
         response = self.client.put(f'/api/users/{id_2}', data=json.dumps({
             'password': 'newpassword'
@@ -229,8 +230,8 @@ class TestUserRoutes(BaseTestCase):
             'username': 'testuser',
             'password': 'testpassword'
         }), content_type='application/json')
-        response = self.client.delete('/api/users/3', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
+        response = self.client.delete('/api/users/100', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'User Not Found')
-        self.assertEqual(data['message'], 'User with id 3 does not exist in the database')
+        self.assertEqual(data['message'], 'User with id 100 does not exist in the database')

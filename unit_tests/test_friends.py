@@ -1,6 +1,6 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
+from unit_tests.base_test import BaseTestCase
 
 
 class TestFriendRoutes(BaseTestCase):
@@ -123,7 +123,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_add_friend_admin(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'admin', 'password': 'admin' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'superuser', 'password': 'superuser' }), content_type='application/json')
         self.client.post(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.post(f'/api/users/{id_3}/friends/{id_2}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 201)
@@ -201,7 +201,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_delete_friend_admin(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'admin', 'password': 'admin' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'superuser', 'password': 'superuser' }), content_type='application/json')
         self.client.post(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.delete(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 200)
