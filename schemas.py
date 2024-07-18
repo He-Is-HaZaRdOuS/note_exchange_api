@@ -21,22 +21,13 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         include_relationships = True
     notes = fields.Nested(NoteSchema, many=True)
 
-class UserSchemaNoPassword(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
-        load_instance = True
-        sqla_session = db.session
-        include_relationships = True
-        exclude = ("password",)
-    notes = fields.Nested(NoteSchema, many=True)
-
 class UserSchemaPrivate(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
         load_instance = True
         sqla_session = db.session
         include_relationships = True
-        exclude = ("notes", "friends", "friends_of", "password")
+        exclude = ("notes", "friends", "friends_of", "password", "admin")
     notes = fields.Nested(NoteSchema, many=True)
 
 class FriendSchema(ma.SQLAlchemyAutoSchema):
@@ -44,14 +35,11 @@ class FriendSchema(ma.SQLAlchemyAutoSchema):
         model = Friend
         load_instance = True
         sqla_session = db.session
-    user = fields.Nested(UserSchemaNoPassword)
-    friend = fields.Nested(UserSchemaNoPassword)
+    user = fields.Nested(UserSchemaPrivate)
+    friend = fields.Nested(UserSchemaPrivate)
 
 
 note_schema = NoteSchema()
-notes_schema = NoteSchema(many=True)
 user_schema = UserSchema()
 user_schema_private = UserSchemaPrivate()
-user_schema_no_password = UserSchemaNoPassword()
-users_schema_no_password = UserSchemaNoPassword(many=True)
 friend_schema = FriendSchema()

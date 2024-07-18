@@ -1,10 +1,10 @@
 from flask import Blueprint, make_response, jsonify
 from config import db
 from models import User, Friend
-from schemas import friend_schema, users_schema_no_password
+from schemas import friend_schema, user_schema_private
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from common_responses import invalidJWT, noUser, noUserID, noJSON
+from common_responses import invalidJWT, noUser, noUserID, noJSON, notAuthorized
 
 friends_bp = Blueprint('friends', __name__)
 
@@ -18,13 +18,15 @@ def get_friends(user_id):
     if not cuser:
         return invalidJWT()
 
+    if int(user_id) != cuser.id and cuser.admin is False:
+        return notAuthorized()
+
     user_id = cuser.id
     friends_as_user = Friend.query.filter_by(user_id=user_id).all()
     friend_ids = {f.friend_id for f in friends_as_user}
     friend_ids.discard(user_id)
     friends = User.query.filter(User.id.in_(friend_ids)).all()
-
-    return jsonify(users_schema_no_password.dump(friends)), 200
+    return jsonify(user_schema_private.dump(friends, many=True)), 200
 
 
 @friends_bp.route("/<friend_id>", methods=["POST"])
@@ -39,6 +41,9 @@ def add_friend(user_id, friend_id):
 
     if not fuser:
         return noUserID(friend_id)
+
+    if int(user_id) != cuser.id and cuser.admin is False:
+        return notAuthorized()
 
     if cuser.id == fuser.id:
         response = jsonify({
@@ -75,18 +80,21 @@ def remove_friend(user_id, friend_id):
     if not fuser:
         return noUserID(friend_id)
 
+    if int(user_id) != cuser.id and cuser.admin is False:
+        return notAuthorized()
+
     friend_to_delete = Friend.query.filter((Friend.user_id == cuser.id) & (Friend.friend_id == fuser.id)).first()
 
     if friend_to_delete:
         db.session.delete(friend_to_delete)
         db.session.commit()
         response = jsonify({
-            "message": f"Removed Friend {fuser.username}"
+            "message": f"Removed Friend with user id {fuser.id}"
         })
         return make_response(response, 200)
     else:
         response = jsonify({
             "error": "Bad request",
-            "message": f"Not Friends with user {fuser.username}"
+            "message": f"Not Friends with user id {fuser.id}"
         })
         return make_response(response, 400)
