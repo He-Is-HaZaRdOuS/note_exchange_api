@@ -31,9 +31,9 @@ This API, built with Flask, enables user registration, friend management, and no
 
 ## Installation & Running
 
-1. Navigate to the `rp_flask_api/` folder and create a virtual environment:
+1. Navigate to the `note_exchange_api/` folder and create a virtual environment:
     ```bash
-    cd rp_flask_api
+    cd note_exchange_api
     python3 -m venv venv
     source venv/bin/activate
     ```
