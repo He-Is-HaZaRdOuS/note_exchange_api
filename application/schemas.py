@@ -1,10 +1,11 @@
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import fields
-from models import User, Note, Friend
-from config import db, ma
+from application.models import User, Note, Friend
+from configuration.config import db, ma
 
 ma = Marshmallow()
 
+# Schema objects to load/dump python objects into/from SQL
 
 class NoteSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

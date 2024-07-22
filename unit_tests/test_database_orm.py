@@ -1,8 +1,9 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
-from models import User, Note, Friend, db
+from unit_tests.base_test import BaseTestCase
+from application.models import User, Note, Friend, db
 
+# Test the database state and the relationships between tables
 
 class TestDatabaseState(BaseTestCase):
 
@@ -22,8 +23,8 @@ class TestDatabaseState(BaseTestCase):
     def test_user_deletion_cascades_1(self):
         with self.app.app_context():
             # Create test users and notes
-            id_2 = self._create_test_user(username='testuser', password='testpassword')
-            id_3 = self._create_test_user(username='testuser2', password='testpassword2')
+            id_2 = self._create_test_user(username='testuser', password='C0mpl3x!')
+            id_3 = self._create_test_user(username='testuser2', password='C0mpl3x!2')
             note_id_1 = self._create_test_note(id_2, 'testcontent1')
             note_id_2 = self._create_test_note(id_3, 'testcontent2')
 
@@ -51,8 +52,8 @@ class TestDatabaseState(BaseTestCase):
     def test_user_deletion_cascades_2(self):
         with self.app.app_context():
             # Create test users and notes
-            id_2 = self._create_test_user(username='testuser', password='testpassword')
-            id_3 = self._create_test_user(username='testuser2', password='testpassword2')
+            id_2 = self._create_test_user(username='testuser', password='C0mpl3x!')
+            id_3 = self._create_test_user(username='testuser2', password='C0mpl3x!2')
             note_id_1 = self._create_test_note(id_2, 'testcontent1')
             note_id_2 = self._create_test_note(id_3, 'testcontent2')
 

@@ -1,0 +1,76 @@
+[database]
+host = "localhost"
+port = 3306
+name = "users"
+user = "user"
+password = "password"
+
+
+[users]
+reserved_usernames = [
+    "superuser",
+    "admin_user",
+    "admin_note",
+    "admin_friend",
+    "admin",
+    "root",
+    "superuser",
+    "administrator",
+    "null",
+    "system",
+    "user",
+    "username",
+    "password",
+    "login",
+    "logout",
+    "signup",
+    "signin",
+    "signout",
+    "register",
+    "unregister",
+    "delete",
+    "remove",
+    "update",
+    "update",
+    "change",
+    "profile",
+    "account",
+    "settings",
+    "config",
+    "configuration",
+    "preferences",
+    "preference",
+    "home",
+    "dashboard",
+]
+
+elevated_users = ["superuser", "admin_user", "admin_note", "admin_friend"]
+
+
+[permissions]
+superuser = [
+    "can_read_users",
+    "can_update_users",
+    "can_delete_users",
+    "can_create_notes",
+    "can_read_notes",
+    "can_update_notes",
+    "can_delete_notes",
+    "can_create_friends",
+    "can_read_friends",
+    "can_update_friends",
+    "can_delete_friends",
+]
+admin_user = ["can_read_users", "can_update_users", "can_delete_users"]
+admin_note = [
+    "can_create_notes",
+    "can_read_notes",
+    "can_update_notes",
+    "can_delete_notes",
+]
+admin_friend = [
+    "can_create_friends",
+    "can_read_friends",
+    "can_update_friends",
+    "can_delete_friends",
+]

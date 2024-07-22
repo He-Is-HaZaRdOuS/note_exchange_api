@@ -1,7 +1,8 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
+from unit_tests.base_test import BaseTestCase
 
+# Test /api/users/<user_id>/friends routes
 
 class TestFriendRoutes(BaseTestCase):
     def test_read_all_friends(self):
@@ -10,7 +11,7 @@ class TestFriendRoutes(BaseTestCase):
         id_4 = self._create_test_user(username="frienduser2")
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_4}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
@@ -25,7 +26,7 @@ class TestFriendRoutes(BaseTestCase):
         id_2 = self._create_test_user()
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/friends', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 200)
@@ -42,7 +43,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_read_all_friends_invalid_jwt(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/friends', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 401)
@@ -54,7 +55,7 @@ class TestFriendRoutes(BaseTestCase):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
         id_4 = self._create_test_user(username="tempuser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         response = self.client.get(f'/api/users/{id_4}/friends', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
@@ -73,7 +74,7 @@ class TestFriendRoutes(BaseTestCase):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="tempuser")
         id_4 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.post(f'/api/users/{id_3}/friends/{id_4}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 401)
@@ -83,7 +84,7 @@ class TestFriendRoutes(BaseTestCase):
 
     def test_add_friend_not_found(self):
         id_2 = self._create_test_user()
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         response = self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_2+1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
@@ -92,7 +93,7 @@ class TestFriendRoutes(BaseTestCase):
 
     def test_add_friend_self(self):
         id_2 = self._create_test_user()
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         response = self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 406)
         data = json.loads(response.data)
@@ -102,7 +103,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_add_friend_already_friends(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers = {'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 406)
@@ -113,7 +114,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_add_friend_different_user(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'frienduser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'frienduser', 'password': 'C0mpl3x!' }), content_type='application/json')
         response = self.client.post(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.data)
@@ -123,7 +124,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_add_friend_admin(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'admin', 'password': 'admin' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'superuser', 'password': 'superuser' }), content_type='application/json')
         self.client.post(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.post(f'/api/users/{id_3}/friends/{id_2}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 201)
@@ -134,7 +135,7 @@ class TestFriendRoutes(BaseTestCase):
         id_3 = self._create_test_user(username="frienduser")
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
@@ -150,7 +151,7 @@ class TestFriendRoutes(BaseTestCase):
         id_2 = self._create_test_user()
         login_response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_2+1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 404)
@@ -168,7 +169,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_delete_friend_invalid_jwt(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 401)
@@ -179,7 +180,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_delete_friend_not_friends(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
         response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
@@ -189,8 +190,8 @@ class TestFriendRoutes(BaseTestCase):
     def test_delete_friend_different_user(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response_1 = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'testpassword' }), content_type='application/json')
-        login_response_2 = self.client.post('/api/login', data=json.dumps({ 'username': 'frienduser', 'password': 'testpassword' }), content_type='application/json')
+        login_response_1 = self.client.post('/api/login', data=json.dumps({ 'username': 'testuser', 'password': 'C0mpl3x!' }), content_type='application/json')
+        login_response_2 = self.client.post('/api/login', data=json.dumps({ 'username': 'frienduser', 'password': 'C0mpl3x!' }), content_type='application/json')
         self.client.post(f'/api/users/{json.loads(login_response_2.data)["id"]}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response_1.data)["access_token"]}'})
         response = self.client.delete(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response_2.data)["access_token"]}'})
         self.assertEqual(response.status_code, 403)
@@ -201,7 +202,7 @@ class TestFriendRoutes(BaseTestCase):
     def test_delete_friend_admin(self):
         id_2 = self._create_test_user()
         id_3 = self._create_test_user(username="frienduser")
-        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'admin', 'password': 'admin' }), content_type='application/json')
+        login_response = self.client.post('/api/login', data=json.dumps({ 'username': 'superuser', 'password': 'superuser' }), content_type='application/json')
         self.client.post(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         response = self.client.delete(f'/api/users/{id_2}/friends/{id_3}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 200)

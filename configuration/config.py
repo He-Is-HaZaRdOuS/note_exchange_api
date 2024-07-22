@@ -11,19 +11,22 @@ config_type = os.getenv('CONFIG')
 
 class Config:
     def __init__(self):
-        self._config = toml.load("config.toml")
+        # Load config from config file
+        self._config = toml.load("configuration/config.toml")
+
+    # Set relevant properties
 
     @property
     def SQLALCHEMY_DATABASE_URI(self):
         if config_type == 'TESTING':
-            return f"mariadb+pymysql://{self._config['test_database']['user']}:{self._config['test_database']['password']}@{self._config['test_database']['host']}:{self._config['test_database']['port']}/{self._config['test_database']['name']}"
+            return "sqlite:///:memory:"
         elif config_type == 'DEVELOPMENT':
             return f"mariadb+pymysql://{self._config['database']['user']}:{self._config['database']['password']}@{self._config['database']['host']}:{self._config['database']['port']}/{self._config['database']['name']}"
         else:
             raise ValueError("Invalid CONFIG environment variable value")
     @property
     def SQLALCHEMY_TRACK_MODIFICATIONS(self):
-        return False  # Optional: Disable modification tracking
+        return False
 
     @property
     def JWT_SECRET_KEY(self):
@@ -40,7 +43,10 @@ class Config:
 config = Config()
 
 # Create the Flask app
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='',
+            static_folder='../static',
+            template_folder='../templates')
 app.config.from_object(config)
 
 # Initialize JWT, SQLAlchemy, and Marshmallow with the Flask app

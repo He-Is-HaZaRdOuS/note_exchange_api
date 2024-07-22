@@ -6,16 +6,15 @@ def set_test_environment():
     os.environ['CONFIG'] = 'TESTING'
 
 def run_tests():
-    # Set the test environment
     set_test_environment()
 
     # Discover and run tests
     loader = unittest.TestLoader()
-    tests = loader.discover('tests')  # Assuming your tests are in a 'tests' directory
+    tests = loader.discover('unit_tests')
     testRunner = unittest.TextTestRunner(verbosity=2)
     result = testRunner.run(tests)
 
-    # Exit with appropriate code
+    # Exit
     if result.wasSuccessful():
         exit(0)
     else:

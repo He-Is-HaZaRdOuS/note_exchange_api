@@ -1,6 +1,8 @@
 import unittest
 import json
-from tests.base_test import BaseTestCase
+from unit_tests.base_test import BaseTestCase
+
+# Test /api/register and /api/login routes
 
 class TestAuthenticationRoutes(BaseTestCase):
 
@@ -37,7 +39,7 @@ class TestAuthenticationRoutes(BaseTestCase):
         self._create_test_user()
         response = self.client.post('/api/register', data=json.dumps({
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.assertEqual(response.status_code, 406)
         data = json.loads(response.data)
@@ -64,7 +66,7 @@ class TestAuthenticationRoutes(BaseTestCase):
         self._create_test_user()
         response = self.client.post('/api/login', data=json.dumps({
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
@@ -73,7 +75,7 @@ class TestAuthenticationRoutes(BaseTestCase):
     def test_login_invalid_username(self):
         response = self.client.post('/api/login', data=json.dumps({
             'username': 'INVALID_USER',
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.assertEqual(response.status_code, 406)
         data = json.loads(response.data)
@@ -99,7 +101,7 @@ class TestAuthenticationRoutes(BaseTestCase):
 
     def test_login_invalid_json(self):
         response = self.client.post('/api/login', data=json.dumps({
-            'password': 'testpassword'
+            'password': 'C0mpl3x!'
         }), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
