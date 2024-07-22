@@ -57,6 +57,7 @@ def redoc():
 # The route will return a 400 status code if the request body is not valid JSON
 @app.route("/api/register", methods=["POST"])
 def register():
+    # Check if the recieved payload is faulty
     try:
         user = request.get_json()
         username = user.get("username")
@@ -67,8 +68,8 @@ def register():
         return noJSON()
     except KeyError:
         return invalidJSON()
-    existing_user = User.query.filter(User.username == username).one_or_none()
 
+    # Reject if username is reserved
     if username_is_reserved(username):
         response = jsonify({
             "error": "Invalid Username",
@@ -76,6 +77,8 @@ def register():
         })
         return make_response(response, 406)
 
+    # Reject if the user already exists
+    existing_user = User.query.filter(User.username == username).one_or_none()
     if existing_user is not None:
         response = jsonify({
             "error": "Username already in use",
@@ -83,6 +86,7 @@ def register():
         })
         return make_response(response, 406)
 
+    # Reject if the username is invalid
     if not username_is_valid(username):
         response = jsonify({
             "error": "Invalid Username",
@@ -90,6 +94,7 @@ def register():
         })
         return make_response(response, 406)
 
+    # Reject if the password is invalid
     if not password_is_valid(password):
         response = jsonify({
             "error": "Invalid Password",
@@ -97,6 +102,7 @@ def register():
         })
         return make_response(response, 406)
 
+    # Else, Accept the request and register new user
     new_user = user_schema.load(user, session=db.session)
     new_user.password = generate_password_hash(password)
     db.session.add(new_user)
@@ -106,6 +112,7 @@ def register():
 
 @app.route("/api/login", methods=["POST"])
 def login():
+    # Check if the recieved payload is faulty
     try:
         user = request.get_json()
         username = user.get("username")
@@ -116,8 +123,8 @@ def login():
         return noJSON()
     except KeyError:
         return invalidJSON()
-    existing_user = User.query.filter(User.username == username).one_or_none()
 
+    # Skip validation check if a reserved user is attempting to log in
     if not username_is_reserved(username):
         if not username_is_valid(username):
             response = jsonify({
@@ -126,6 +133,9 @@ def login():
             })
             return make_response(response, 406)
 
+    existing_user = User.query.filter(User.username == username).one_or_none()
+
+    # Generate JWT if user exists and has provided the correct password
     if existing_user is not None and check_password_hash(existing_user.password, password):
         access_token = create_access_token(identity={'username': username}, expires_delta=datetime.timedelta(hours=24))
         response = jsonify({
@@ -134,6 +144,7 @@ def login():
         })
         return make_response(response, 200)
 
+    # Else, Reject the request
     response = jsonify({
         "error": "Unauthorized",
         "message": "Invalid credentials"
@@ -142,6 +153,3 @@ def login():
 
 def run():
     app.run(host="0.0.0.0", port=8000, debug=True)
-
-if __name__ == "__main__":
-    run()

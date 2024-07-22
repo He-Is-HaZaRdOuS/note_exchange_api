@@ -1,72 +1,88 @@
-# Python REST APIs With Flask
+# NoteExchangeAPI
 
-### MariaDB
-This project uses MariaDB as the database. You can install MariaDB on your machine by following the instructions on the [official website](https://mariadb.org/).
+## Overview
 
-After installing MariaDB, you can create a database and a user with the following commands:
+This API, built with Flask, enables user registration, friend management, and note exchange. It features an RBAC (Role-Based Access Control) system for multi-tier administrators with varying privileges. The database setup includes SQLite3 for unit tests and MariaDB for production, environment settings are managed via a config.toml file.
 
-```console
-mariadb -u root -p
-CREATE DATABASE users;
-CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON users.* TO 'user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
+## Features
 
-If you would like to use a different database name, user, or password, you can update the `config.toml` file in the `rp_flask_api/` folder.
+- **User Registration**: Register new users.
+- **Friend Management**: Add and manage friends.
+- **Note Exchange**: Exchange notes between users.
+- **RBAC System**: Multi-tier admin roles with different access levels.
+- **Testing**: Uses SQLite3 in-memory database for unit tests.
+- **Database**: Utilizes MariaDB for production environments.
+- **Configuration**: Managed via config.toml.
+- **Documentation**: OpenAPI docs available courtesy of Swagger and Redoc.
 
-### Installation & Running
-First, navigate to the `rp_flask_api/` folder and create a virtual environment:
+## MariaDB Setup
 
-```console
-cd rp_flask_api
-python3 -m venv venv
-source venv/bin/activate
-```
+1. Install MariaDB from the [official website](https://mariadb.org/).
+2. Create a database and a user:
+    ```bash
+    mariadb -u root -p
+    CREATE DATABASE users;
+    CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
+    GRANT ALL PRIVILEGES ON users.* TO 'user'@'localhost';
+    FLUSH PRIVILEGES;
+    EXIT;
+    ```
+    Update `config.toml` if you use different credentials.
 
-Install the pinned dependencies from `requirements.txt`:
+## Installation & Running
 
-```console
-python -m pip install -r requirements.txt
-```
+1. Navigate to the `rp_flask_api/` folder and create a virtual environment:
+    ```bash
+    cd rp_flask_api
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
-Initialize the database:
-```console
-python build_database.py
-```
+2. Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Finally, start the development web server:
+3. Initialize the database:
+    ```bash
+    python build_database.py
+    ```
 
-```console
-python run_app.py
-```
+4. Start the development server:
+    ```bash
+    python run_app.py
+    ```
 
-To see your home page, visit `http://127.0.0.1:8000`. You can find the Swagger UI API documentation on `http://127.0.0.1:8000/api/docs`.
+5. Access the home page at `http://127.0.0.1:8000`. API documentation is available at `http://127.0.0.1:8000/api/docs`.
 
+## Running Tests
 
-### Testing
-To run the tests, you need to set up a test database. You can do this by running the following commands:
+1. Run the tests:
+    ```bash
+    python run_unit_tests.py
+    ```
 
-```console
-myariadb -u root -p
-CREATE DATABASE tests;
-CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'testpassword';
-GRANT ALL PRIVILEGES ON tests.* TO 'test'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
+2. To see unit test coverage:
+    ```bash
+    python run_coverage_tests.py
+    ```
 
-If you would like to use a different database name, user, or password, you can update the `config.toml` file in the `rp_flask_api/` folder.
+## Testing with Postman
 
-After setting up the test database, you can run the tests with the following command
+1. Download and install Postman from the [official website](https://www.postman.com/downloads/).
 
-```console
-python run_unit_tests.py
-```
+2. Create a new request in Postman:
+    - Set the method (GET, POST, PUT, DELETE) and URL according to your API endpoints.
+    - Add necessary headers (e.g., `Content-Type: application/json`).
+    - Include the request body if needed (e.g., JSON data for POST requests).
+    - **For protected endpoints**, provide the Bearer token JWT in the `Authorization` header:
+      ```
+      Authorization: Bearer <your_jwt_token>
+      ```
 
-If you would like to see unit test coverage, you can run the following command:
+3. Send the request and view the response:
+    - Use Postman’s interface to send requests and view server responses, making it easier to test and debug the API.
 
-```console
-python run_coverage.py
-```
+## License
+
+This project is licensed under the MIT License.

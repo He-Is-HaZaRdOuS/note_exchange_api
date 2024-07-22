@@ -11,7 +11,10 @@ config_type = os.getenv('CONFIG')
 
 class Config:
     def __init__(self):
+        # Load config from config file
         self._config = toml.load("configuration/config.toml")
+
+    # Set relevant properties
 
     @property
     def SQLALCHEMY_DATABASE_URI(self):
@@ -40,7 +43,10 @@ class Config:
 config = Config()
 
 # Create the Flask app
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='',
+            static_folder='../static',
+            template_folder='../templates')
 app.config.from_object(config)
 
 # Initialize JWT, SQLAlchemy, and Marshmallow with the Flask app

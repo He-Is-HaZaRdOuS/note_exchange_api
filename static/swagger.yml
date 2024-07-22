@@ -64,6 +64,108 @@ components:
           format: int64
 
 paths:
+  /:
+    get:
+      summary: Home
+      description: Returns a rendered HTML page with a link to the API documentation.
+      tags:
+        - Home
+      responses:
+        "200":
+          description: Successful response
+          content:
+            text/html:
+              schema:
+                type: string
+                example: "<html>...</html>"
+
+  /api/docs:
+    get:
+      summary: API Documentation
+      description: Returns the Redoc HTML page for API documentation.
+      tags:
+        - Documentation
+      responses:
+        "200":
+          description: Successful response
+          content:
+            text/html:
+              schema:
+                type: string
+                example: "<html>...</html>"
+
+  /api/register:
+    post:
+      summary: Register User
+      description: Registers a new user.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  username:
+                    type: string
+                example:
+                  id: 1
+                  username: example_user
+        "406":
+          description: User with username already exists error
+
+  /api/login:
+    post:
+      summary: Login
+      description: Logs in a user and returns an access token.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        "200":
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                example:
+                  access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: Invalid credentials error
   /users:
     get:
       tags:

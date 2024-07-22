@@ -1,5 +1,7 @@
 from flask import jsonify, make_response
 
+# Provide common http responses to rejected requests
+
 def invalidJWT():
     response = jsonify({
         "error": "Unauthorized",

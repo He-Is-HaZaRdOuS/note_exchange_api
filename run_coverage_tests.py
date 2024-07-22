@@ -7,11 +7,11 @@ def set_test_environment():
     os.environ['CONFIG'] = 'TESTING'
 
 def run_tests():
-    # Set the test environment
+    # Set test environment
     set_test_environment()
 
-    # Start coverage
-    cov = coverage.Coverage(omit=["tests/*"])
+    # Start coverage (exclude unit tests)
+    cov = coverage.Coverage(omit=["unit_tests/*"])
     cov.start()
 
     # Discover and run tests
@@ -28,10 +28,10 @@ def run_tests():
     print("\nCoverage Report:")
     cov.report()
 
-    # Optionally, generate HTML report
+    # Generate HTML report
     cov.html_report(directory='coverage_html_report')
 
-    # Optionally, generate XML report
+    # Generate XML report
     cov.xml_report(outfile='coverage.xml')
 
 # Run the tests

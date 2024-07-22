@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from configuration.config import db
 
+# Define models and relationships that translate to database tables using the ORM
+
 class Friend(db.Model):
     __tablename__ = "friend"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -23,6 +25,20 @@ class Note(db.Model):
         db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
     )
 
+# Mapper table (Role < - > Permission)
+roles_permissions = db.Table('roles_permissions',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id', ondelete="CASCADE"), primary_key=True),
+    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id', ondelete="CASCADE"), primary_key=True)
+)
+
+# Mapper table (User < - > Role)
+users_roles = db.Table(
+    'users_roles',
+    db.Model.metadata,
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), primary_key=True),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id', ondelete="CASCADE"), primary_key=True)
+)
+
 class User(db.Model):
     __tablename__ = "user"
     admin = db.Column(db.Boolean, default=False)
@@ -39,7 +55,7 @@ class User(db.Model):
         single_parent=True,
         order_by="desc(Note.timestamp)"
     )
-    roles = db.relationship('Role', secondary='user_role')
+    roles = db.relationship('Role', secondary=users_roles, backref=db.backref('users', lazy='dynamic', cascade="all, delete"))
 
     def has_role(self, role_name):
         return any(role.name == role_name for role in self.roles)
@@ -56,27 +72,27 @@ class User(db.Model):
         ).scalar()
 
 class Role(db.Model):
-    __tablename__ = 'role'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True, nullable=False)
+    permissions = db.relationship('Permission', secondary=roles_permissions, backref=db.backref('roles', lazy='dynamic', cascade="all, delete"))
 
-    permissions = db.relationship('Permission', secondary='role_permission')
+    def has_permission(self, permission):
+        if not permission:
+            return False
 
-    def has_permission(self, permission_name):
-        return any(permission.name == permission_name for permission in self.permissions)
+        return db.session.query(roles_permissions).filter(
+            roles_permissions.c.role_id == self.id,
+            roles_permissions.c.permission_id == permission.id
+        ).count() > 0
+
+    def add_permission(self, permission):
+        if not self.has_permission(permission):
+            self.permissions.append(permission)
+
+    def remove_permission(self, permission):
+        if self.has_permission(permission):
+            self.permissions.remove(permission)
 
 class Permission(db.Model):
-    __tablename__ = 'permission'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True, nullable=False)
-
-user_role = db.Table('user_role',
-    db.Column(
-        'user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
-)
-
-role_permission = db.Table('role_permission',
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
-    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
-)

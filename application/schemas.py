@@ -5,6 +5,7 @@ from configuration.config import db, ma
 
 ma = Marshmallow()
 
+# Schema objects to load/dump python objects into/from SQL
 
 class NoteSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

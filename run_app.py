@@ -3,6 +3,7 @@ import os
 # Set the environment variable to determine the app configuration
 os.environ['CONFIG'] = 'DEVELOPMENT'
 
+# Delayed import to avoid circular dependencies
 from application import app
 
 
