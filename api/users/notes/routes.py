@@ -5,7 +5,7 @@ from application.schemas import note_schema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest
 from sqlalchemy import select
-from helpers.common_responses import invalidJWT, noUser, noNote, notAuthorized, noJSON, noUserID, invalidJSON
+from helpers.common_responses import badRequest, unauthorized, forbidden, notFound
 from helpers.decorators import permission_required, access_required
 
 # Create blueprint
@@ -22,7 +22,7 @@ def get_friends_notes(user_id):
     existing_user = User.query.filter(User.id == user_id).one_or_none()
 
     if existing_user is None:
-        return noUserID(user_id)
+        return notFound()
 
     friends_who_added_me_subquery = db.session.query(Friend.user_id).filter(Friend.friend_id == cuser.id).subquery()
     friends_notes_query = Note.query.filter(Note.user_id.in_(select(friends_who_added_me_subquery)))
@@ -43,14 +43,14 @@ def create(user_id):
         if not content:
             raise KeyError
     except BadRequest:
-        return noJSON()
+        return badRequest("Could not load JSON from request")
     except KeyError:
-        return invalidJSON()
+        return badRequest("Invalid JSON body")
 
     existing_user = User.query.filter(User.id == user_id).one_or_none()
 
     if existing_user is None:
-        return noUserID(user_id)
+        return notFound()
 
     new_note = Note(
         content=content.strip(),
@@ -69,7 +69,7 @@ def read_all(user_id):
     existing_user = User.query.filter(User.id == user_id).one_or_none()
 
     if existing_user is None:
-        return noUserID(user_id)
+        return notFound()
 
     my_notes = Note.query.filter_by(user_id=existing_user.id).all()
     return note_schema.dump(my_notes, many=True)
@@ -83,13 +83,13 @@ def read_one(user_id, note_id):
     note = Note.query.get(note_id)
 
     if existing_user is None:
-        return noUserID(user_id)
+        return notFound()
 
     if note is None:
-        return noNote(note_id)
+        return notFound()
 
     if note.user_id != user_id:
-        return notAuthorized()
+        return forbidden()
 
     return note_schema.dump(note)
 
@@ -102,15 +102,15 @@ def update(user_id, note_id):
     try:
         note_data = request.get_json()
     except BadRequest:
-        return noJSON()
+        return badRequest("Could not load JSON from request")
 
     existing_note = Note.query.get(note_id)
 
     if existing_note is None:
-        return noNote(note_id)
+        return notFound()
 
     if existing_note.user_id != user_id:
-        return notAuthorized()
+        return forbidden()
 
     existing_note.content = note_data.get('content').strip()
     db.session.commit()
@@ -125,10 +125,10 @@ def delete(user_id, note_id):
     existing_note = Note.query.get(note_id)
 
     if existing_note is None:
-        return noNote(note_id)
+        return notFound()
 
     if existing_note.user_id != user_id:
-        return notAuthorized()
+        return forbidden()
 
     db.session.delete(existing_note)
     db.session.commit()

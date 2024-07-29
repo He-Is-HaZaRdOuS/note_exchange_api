@@ -4,7 +4,7 @@ from application.models import User, Friend
 from application.schemas import friend_schema, user_schema_private
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from helpers.common_responses import invalidJWT, noUser, noUserID, notAuthorized
+from helpers.common_responses import badRequest, unauthorized, forbidden, notFound
 from helpers.decorators import permission_required
 
 # Create blueprint
@@ -19,7 +19,7 @@ def create(user_id, friend_id):
     fuser = User.query.filter(User.id == friend_id).one_or_none()
 
     if not fuser:
-        return noUserID(friend_id)
+        return notFound()
 
     if user_id == fuser.id:
         return make_response(jsonify({"error": "Bad Request", "message": "Cannot add yourself as a Friend"}), 406)
@@ -54,7 +54,7 @@ def delete(user_id, friend_id):
     fuser = User.query.filter(User.id == friend_id).one_or_none()
 
     if not fuser:
-        return noUserID(friend_id)
+        return notFound()
 
     friend_to_delete = Friend.query.filter_by(user_id=user_id, friend_id=fuser.id).first()
 

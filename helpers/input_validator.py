@@ -1,12 +1,17 @@
 from string import ascii_letters, digits
 import toml
 
-# Load config from config file
-with open('configuration/config.toml', 'r') as file:
-    config = toml.load(file)
+# Load configs from config files
+with open('configuration/reserved_usernames.toml', 'r') as file_reserved:
+    config_reserved = toml.load(file_reserved)
 
-reserved_usernames = config['users']['reserved_usernames']
-elevated_usernames = config['users']['elevated_users']
+with open('configuration/elevated_users.toml', 'r') as file_elevated:
+    config_elevated = toml.load(file_elevated)
+
+reserved_usernames = config_reserved['users']['reserved_usernames']
+elevated_users = config_elevated['users']['elevated_users']
+
+reserved_usernames = reserved_usernames + elevated_users
 
 
 def password_is_valid(password):

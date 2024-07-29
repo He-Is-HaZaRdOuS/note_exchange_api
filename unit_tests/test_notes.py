@@ -151,8 +151,8 @@ class TestNoteRoutes(BaseTestCase):
         response = self.client.get(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
-        self.assertEqual(data['error'], 'Note not found')
-        self.assertEqual(data['message'], 'Note with id 100 does not exist in the database')
+        self.assertEqual(data['error'], 'Not Found')
+        self.assertEqual(data['message'], 'Resource not found')
 
     def test_get_notes(self):
         id_2 = self._create_test_user()
@@ -290,8 +290,8 @@ class TestNoteRoutes(BaseTestCase):
         response = self.client.put(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', data=json.dumps({'content': 'newcontent'}), headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
-        self.assertEqual(data['error'], 'Note not found')
-        self.assertEqual(data['message'], 'Note with id 100 does not exist in the database')
+        self.assertEqual(data['error'], 'Not Found')
+        self.assertEqual(data['message'], 'Resource not found')
 
     def test_update_note_no_json(self):
         id_2 = self._create_test_user()
@@ -328,8 +328,8 @@ class TestNoteRoutes(BaseTestCase):
         response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/notes/100', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'}, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
-        self.assertEqual(data['error'], 'Note not found')
-        self.assertEqual(data['message'], 'Note with id 100 does not exist in the database')
+        self.assertEqual(data['error'], 'Not Found')
+        self.assertEqual(data['message'], 'Resource not found')
 
     def test_delete_note_invalid_jwt(self):
         id_2 = self._create_test_user()

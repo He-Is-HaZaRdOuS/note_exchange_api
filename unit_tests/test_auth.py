@@ -107,6 +107,3 @@ class TestAuthenticationRoutes(BaseTestCase):
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Bad Request')
         self.assertEqual(data['message'], 'Invalid JSON body')
-
-if __name__ == '__main__':
-    unittest.main()

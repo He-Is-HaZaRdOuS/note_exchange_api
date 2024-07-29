@@ -71,7 +71,7 @@ def assign_role_to_user(session, username, role_name):
 def create_admin_users(session):
     try:
         # Load config from config file
-        with open('configuration/config.toml', 'r') as file:
+        with open('configuration/elevated_users.toml', 'r') as file:
             config = toml.load(file)
 
         # Initialize roles and permissions from config
@@ -89,8 +89,7 @@ def create_admin_users(session):
             admin_user = User(
                 id=i,
                 username=username,
-                password=generate_password_hash(username),
-                admin=True
+                password=generate_password_hash(username)
             )
             session.add(admin_user)
             session.commit()
