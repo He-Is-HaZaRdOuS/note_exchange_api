@@ -5,7 +5,7 @@ from application.schemas import user_schema, user_schema_private
 from werkzeug.security import generate_password_hash
 from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from helpers.common_responses import invalidJWT, noUser, noUserID, notAuthorized, noJSON, invalidJSON
+from helpers.common_responses import badRequest, unauthorized, forbidden, notFound
 from helpers.decorators import permission_required, admin_required
 
 # Create blueprint
@@ -26,7 +26,8 @@ def expired_token_callback(header, payload):
 @jwt_required()
 @admin_required("can_read_users")
 def read_all():
-    users = User.query.filter(User.admin == False).all()
+    # Query users that have no roles (non-admins)
+    users = User.query.filter(User.roles == None).all()
     return user_schema_private.dump(users, many=True)
 
 
@@ -37,7 +38,7 @@ def read_all():
 def read_one(user_id):
     user = User.query.filter(User.id == user_id).one_or_none()
     if user is None:
-        return noUserID(user_id)
+        return notFound()
 
     return user_schema_private.dump(user)
 
@@ -55,14 +56,14 @@ def update(user_id):
         if password is None:
             raise KeyError
     except BadRequest:
-        return noJSON()
+        return badRequest("Could not load JSON from request")
     except KeyError:
-        return invalidJSON()
+        return badRequest("Invalid JSON body")
 
     existing_user = User.query.filter(User.id == user_id).one_or_none()
 
     if existing_user is None:
-        return noUserID(user_id)
+        return notFound()
 
     update_user = user_schema.load(user, session=db.session)
     existing_user.password = generate_password_hash(update_user.password)
@@ -80,7 +81,7 @@ def delete(user_id):
     existing_user = User.query.filter(User.id == user_id).one_or_none()
 
     if existing_user is None:
-        return noUserID(user_id)
+        return notFound()
 
     db.session.delete(existing_user)
     db.session.commit()

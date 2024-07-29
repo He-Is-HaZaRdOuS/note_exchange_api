@@ -12,7 +12,7 @@ config_type = os.getenv('CONFIG')
 class Config:
     def __init__(self):
         # Load config from config file
-        self._config = toml.load("configuration/config.toml")
+        self._config = toml.load("configuration/database_config.toml")
 
     # Set relevant properties
 

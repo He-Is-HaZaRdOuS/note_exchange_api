@@ -11,7 +11,15 @@ def run_tests():
     set_test_environment()
 
     # Start coverage (exclude unit tests)
-    cov = coverage.Coverage(omit=["unit_tests/*"])
+    cov = coverage.Coverage(omit=["unit_tests/*",
+        "configuration/*",
+        "helpers/common_responses.py",
+        "helpers/input_validator.py",
+        "helpers/__init__.py",
+        "application/schemas.py",
+        "application/__init__.py",
+        "application/models.py",
+        "api/__init__.py",])
     cov.start()
 
     # Discover and run tests

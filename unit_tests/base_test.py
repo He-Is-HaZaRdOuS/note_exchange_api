@@ -71,7 +71,7 @@ class BaseTestCase(unittest.TestCase):
     def _create_admin_users(cls):
         try:
             # Load the config from the config file
-            with open('configuration/config.toml', 'r') as file:
+            with open('configuration/elevated_users.toml', 'r') as file:
                 config = toml.load(file)
 
             # Initialize roles and permissions from config
@@ -88,8 +88,7 @@ class BaseTestCase(unittest.TestCase):
                 admin_user = User(
                     id=i,
                     username=username,
-                    password=generate_password_hash(username),
-                    admin=True
+                    password=generate_password_hash(username)
                 )
 
                 cls.session = cls.Session()
@@ -162,4 +161,4 @@ class BaseTestCase(unittest.TestCase):
             self.fail(f"Failed to create test note: {e}")
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    unittest.main()

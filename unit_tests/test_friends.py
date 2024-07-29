@@ -88,8 +88,8 @@ class TestFriendRoutes(BaseTestCase):
         response = self.client.post(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_2+1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
-        self.assertEqual(data['error'], 'User Not Found')
-        self.assertEqual(data['message'], f'User with id {id_2+1} does not exist in the database')
+        self.assertEqual(data['error'], 'Not Found')
+        self.assertEqual(data['message'], "Resource not found")
 
     def test_add_friend_self(self):
         id_2 = self._create_test_user()
@@ -156,8 +156,8 @@ class TestFriendRoutes(BaseTestCase):
         response = self.client.delete(f'/api/users/{json.loads(login_response.data)["id"]}/friends/{id_2+1}', headers={'Authorization': f'Bearer {json.loads(login_response.data)["access_token"]}'})
         self.assertEqual(response.status_code, 404)
         data = json.loads(response.data)
-        self.assertEqual(data['error'], 'User Not Found')
-        self.assertEqual(data['message'], f'User with id {id_2+1} does not exist in the database')
+        self.assertEqual(data['error'], 'Not Found')
+        self.assertEqual(data['message'], "Resource not found")
 
     def test_delete_friend_no_jwt(self):
         id_2 = self._create_test_user()

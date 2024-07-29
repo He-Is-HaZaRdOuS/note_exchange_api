@@ -28,7 +28,7 @@ class UserSchemaPrivate(ma.SQLAlchemyAutoSchema):
         load_instance = True
         sqla_session = db.session
         include_relationships = True
-        exclude = ("notes", "friends", "friends_of", "password", "admin")
+        exclude = ("notes", "friends", "friends_of", "password")
     notes = fields.Nested(NoteSchema, many=True)
 
 class FriendSchema(ma.SQLAlchemyAutoSchema):

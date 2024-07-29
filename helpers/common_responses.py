@@ -1,52 +1,35 @@
-from flask import jsonify, make_response
-
 # Provide common http responses to rejected requests
 
-def invalidJWT():
+from flask import jsonify, make_response
+
+# 400 Bad Request with a specialized message
+def badRequest(message):
+    response = jsonify({
+        "error": "Bad Request",
+        "message": message
+    })
+    return make_response(response, 400)
+
+# 401 Unauthorized
+def unauthorized():
     response = jsonify({
         "error": "Unauthorized",
         "message": "User not found or JWT is invalid"
     })
     return make_response(response, 401)
 
-def noUser(username):
-    response = jsonify({
-        "error": "User Not Found",
-        "message": f"User with username {username} does not exist in the database"
-    })
-    return make_response(response, 404)
-
-def noUserID(user_id):
-    response = jsonify({
-        "error": "User Not Found",
-        "message": f"User with id {user_id} does not exist in the database"
-    })
-    return make_response(response, 404)
-
-def noNote(note_id):
-    response = jsonify({
-        "error": "Note not found",
-        "message": f"Note with id {note_id} does not exist in the database"
-    })
-    return make_response(response, 404)
-
-def notAuthorized():
+# 403 Forbidden
+def forbidden():
     response = jsonify({
         "error": "Forbidden",
         "message": "Not authorized to access this resource"
     })
     return make_response(response, 403)
 
-def noJSON():
+# 404 Not Found
+def notFound():
     response = jsonify({
-        "error": "Bad Request",
-        "message": "Could not load JSON from request"
+        "error": "Not Found",
+        "message": "Resource not found"
     })
-    return make_response(response, 400)
-
-def invalidJSON():
-    response = jsonify({
-        "error": "Bad Request",
-        "message": "Invalid JSON body"
-    })
-    return make_response(response, 400)
+    return make_response(response, 404)
